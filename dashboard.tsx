@@ -68,6 +68,8 @@ import { Inbox } from "./components/Inbox"
 import { SubscriptionPlans } from "./components/SubscriptionPlans"
 
 export default function InfluencerDashboard() {
+  console.log("Dashboard loaded with new features - Inbox, Campaigns, Subscriptions!")
+  
   const [activeTab, setActiveTab] = useState("home")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [selectedSuggestion, setSelectedSuggestion] = useState(0)
