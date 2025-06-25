@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
 import { User, Briefcase, TrendingUp, Users, Target, DollarSign, Sparkles, BarChart3, Eye, EyeOff } from "lucide-react"
+import { AccountConnection } from "./onboarding/AccountConnection"
 
 interface LoginPageProps {
   onLogin: (role: "creator" | "brand") => void
@@ -19,16 +20,23 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isSignup, setIsSignup] = useState(false)
+  const [showAccountConnection, setShowAccountConnection] = useState(false)
 
   const handleLogin = async () => {
     if (!selectedRole || !email || !password) return
-
     setIsLoading(true)
-
     // Simulate login process
     await new Promise((resolve) => setTimeout(resolve, 1500))
-
     onLogin(selectedRole)
+  }
+
+  const handleSignup = async () => {
+    if (!selectedRole || !email || !password) return
+    setIsLoading(true)
+    // Simulate signup process
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setShowAccountConnection(true)
   }
 
   const creatorFeatures = [
@@ -44,6 +52,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     { icon: Target, text: "ROI optimization tools" },
     { icon: Sparkles, text: "Content strategy insights" },
   ]
+
+  if (showAccountConnection) {
+    return <AccountConnection onComplete={() => onLogin(selectedRole!)} />
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center p-4">
@@ -63,7 +75,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
         <Card className="border-0 shadow-xl">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl">Welcome Back!</CardTitle>
+            <CardTitle className="text-xl">{isSignup ? "Sign Up" : "Welcome Back!"}</CardTitle>
             <p className="text-sm text-gray-600">Choose how you want to use Artemis</p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -186,7 +198,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
             {/* Login Button */}
             <Button
-              onClick={handleLogin}
+              onClick={isSignup ? handleSignup : handleLogin}
               disabled={!selectedRole || !email || !password || isLoading}
               className={`w-full ${
                 selectedRole === "creator"
@@ -198,12 +210,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Signing in...</span>
+                  <span className="animate-spin inline-block"><TrendingUp className="w-4 h-4" /></span>
+                  {isSignup ? "Signing up..." : "Logging in..."}
                 </div>
-              ) : (
-                `Sign in as ${selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : "User"}`
-              )}
+              ) : isSignup ? "Sign Up" : "Log In"}
             </Button>
 
             {/* Demo Credentials */}
@@ -227,8 +237,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <div className="text-center space-y-2">
               <button className="text-sm text-gray-600 hover:text-gray-800">Forgot your password?</button>
               <div className="text-sm text-gray-600">
-                Don't have an account?{" "}
-                <button className="text-purple-600 hover:text-purple-700 font-medium">Sign up</button>
+                {isSignup ? (
+                  <button className="text-purple-600 hover:text-purple-700 font-medium">Sign up</button>
+                ) : (
+                  <button
+                    type="button"
+                    className="text-purple-600 hover:text-purple-700 font-medium"
+                    onClick={() => setIsSignup(!isSignup)}
+                  >
+                    Don't have an account? Sign up
+                  </button>
+                )}
               </div>
             </div>
           </CardContent>

@@ -74,6 +74,10 @@ export function AccountConnection({ onComplete }: AccountConnectionProps) {
 
     setConnectionStep(4)
     setIsConnecting(false)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("accountsConnected", "true")
+    }
+    setTimeout(() => onComplete(), 1000)
   }
 
   const dataPoints = [

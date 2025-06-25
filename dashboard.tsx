@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -76,6 +76,14 @@ export default function InfluencerDashboard() {
     followerCount,
   } = useDashboardData()
 
+  useEffect(() => {
+    // On mount, check if Instagram is already connected (from signup)
+    if (typeof window !== "undefined") {
+      const connected = localStorage.getItem("accountsConnected") === "true"
+      setAccountsConnected(connected)
+    }
+  }, [])
+
   const handleLogin = (role: "creator" | "brand") => {
     setUserRole(role)
     setIsAuthenticated(true)
@@ -84,6 +92,9 @@ export default function InfluencerDashboard() {
 
   const handleAccountsConnected = () => {
     setAccountsConnected(true)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("accountsConnected", "true")
+    }
   }
 
   if (!isAuthenticated) {
@@ -263,7 +274,7 @@ export default function InfluencerDashboard() {
             {userRole === "creator" ? (
               <div className="p-4 space-y-6">
                 {/* Content Suggestion Card with Carousel */}
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-pink-50">
+                <Card className="glass-card border-0 shadow-lg bg-gradient-to-br from-orange-50 to-pink-50">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -308,7 +319,7 @@ export default function InfluencerDashboard() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button className="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600">
+                      <Button className="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 premium-btn">
                         <Sparkles className="w-4 h-4 mr-2" />
                         Create This Post
                       </Button>
@@ -320,7 +331,7 @@ export default function InfluencerDashboard() {
                 </Card>
 
                 {/* Performance Summary with Interactive Charts */}
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="w-5 h-5 text-green-500" />
@@ -372,7 +383,7 @@ export default function InfluencerDashboard() {
                 </Card>
 
                 {/* What's Working with Interactive Elements */}
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Target className="w-5 h-5 text-purple-500" />
@@ -421,7 +432,7 @@ export default function InfluencerDashboard() {
                 </Card>
 
                 {/* Brand Opportunities */}
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <DollarSign className="w-5 h-5 text-green-500" />
@@ -469,7 +480,7 @@ export default function InfluencerDashboard() {
                   <p className="text-gray-600">Find and apply to brand campaigns that match your niche</p>
                 </div>
                 
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -529,7 +540,7 @@ export default function InfluencerDashboard() {
                 </div>
               </div>
 
-              <Card className="border-0 shadow-lg">
+              <Card className="glass-card border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-blue-600" />
@@ -566,7 +577,7 @@ export default function InfluencerDashboard() {
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900">Analytics & Insights</h2>
                 
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle>Performance Overview</CardTitle>
                   </CardHeader>
@@ -575,7 +586,7 @@ export default function InfluencerDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle>Content Performance</CardTitle>
                   </CardHeader>
@@ -618,7 +629,7 @@ export default function InfluencerDashboard() {
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
                 
-                <Card className="border-0 shadow-lg">
+                <Card className="glass-card border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle>Account Settings</CardTitle>
                   </CardHeader>
