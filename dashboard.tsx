@@ -5,18 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar } from "@/components/ui/calendar"
 import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   TrendingUp,
   Heart,
-  CalendarIcon,
   BarChart3,
-  FileText,
   Settings,
   Home,
   Clock,
@@ -48,7 +41,6 @@ import {
   Twitter,
   MessageSquare,
   Target as TargetIcon,
-  Crown,
 } from "lucide-react"
 import { useDashboardData } from "./hooks/useDashboardData"
 import { LoadingScreen } from "./components/LoadingScreen"
@@ -58,24 +50,13 @@ import type { Post } from "./types/dashboard"
 import { LoginPage } from "./components/LoginPage"
 import { CreatorRecommendations } from "./components/creator/CreatorRecommendations"
 import { BrandHome } from "./components/brand/BrandHome"
-import { BrandCalendar } from "./components/brand/BrandCalendar"
 import { BrandInsights } from "./components/brand/BrandInsights"
-import { BrandReport } from "./components/brand/BrandReport"
 import { BrandSettings } from "./components/brand/BrandSettings"
 import { AccountConnection } from "./components/onboarding/AccountConnection"
-import { CampaignCreator } from "./components/brand/CampaignCreator"
-import { Inbox } from "./components/Inbox"
-import { SubscriptionPlans } from "./components/SubscriptionPlans"
 
 export default function InfluencerDashboard() {
   const [activeTab, setActiveTab] = useState("home")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [selectedSuggestion, setSelectedSuggestion] = useState(0)
-  const [showNewPostDialog, setShowNewPostDialog] = useState(false)
-  const [newPost, setNewPost] = useState<Partial<Post>>({
-    type: "Post",
-    status: "draft",
-  })
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<"creator" | "brand" | null>(null)
   const [accountsConnected, setAccountsConnected] = useState(false)
@@ -120,20 +101,6 @@ export default function InfluencerDashboard() {
   const avgEngagement = getAverageEngagement()
   const topPost = posts.find((p) => p.status === "published" && p.likes)
   const currentSuggestion = contentSuggestions[selectedSuggestion] || contentSuggestions[0]
-
-  const handleCreatePost = () => {
-    if (newPost.content && newPost.date && newPost.time) {
-      addNewPost({
-        date: newPost.date,
-        time: newPost.time,
-        type: newPost.type as Post["type"],
-        content: newPost.content,
-        status: newPost.status as Post["status"],
-      })
-      setNewPost({ type: "Post", status: "draft" })
-      setShowNewPostDialog(false)
-    }
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -258,41 +225,33 @@ export default function InfluencerDashboard() {
           <TabsList
             className={`grid w-full ${
               userRole === "creator" 
-                ? "grid-cols-8" 
-                : "grid-cols-7"
-            } bg-white border-b sticky top-0 z-10 overflow-x-auto`}
+                ? "grid-cols-6" 
+                : "grid-cols-5"
+            } bg-white border-b sticky top-0 z-10`}
           >
-            <TabsTrigger value="home" className="flex flex-col gap-1 py-3 min-w-0">
+            <TabsTrigger value="home" className="flex flex-col gap-1 py-3">
               <Home className="w-4 h-4" />
               <span className="text-xs">Home</span>
             </TabsTrigger>
-            <TabsTrigger value="campaigns" className="flex flex-col gap-1 py-3 min-w-0">
+            <TabsTrigger value="campaigns" className="flex flex-col gap-1 py-3">
               <TargetIcon className="w-4 h-4" />
               <span className="text-xs">{userRole === "creator" ? "Campaigns" : "Create"}</span>
             </TabsTrigger>
-            <TabsTrigger value="inbox" className="flex flex-col gap-1 py-3 min-w-0">
+            <TabsTrigger value="inbox" className="flex flex-col gap-1 py-3">
               <MessageSquare className="w-4 h-4" />
               <span className="text-xs">Inbox</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex flex-col gap-1 py-3 min-w-0">
-              <CalendarIcon className="w-4 h-4" />
-              <span className="text-xs">Calendar</span>
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="flex flex-col gap-1 py-3 min-w-0">
+            <TabsTrigger value="insights" className="flex flex-col gap-1 py-3">
               <BarChart3 className="w-4 h-4" />
               <span className="text-xs">Insights</span>
             </TabsTrigger>
             {userRole === "creator" && (
-              <TabsTrigger value="recommendations" className="flex flex-col gap-1 py-3 min-w-0">
+              <TabsTrigger value="recommendations" className="flex flex-col gap-1 py-3">
                 <Lightbulb className="w-4 h-4" />
                 <span className="text-xs">Tips</span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="subscription" className="flex flex-col gap-1 py-3 min-w-0">
-              <Crown className="w-4 h-4" />
-              <span className="text-xs">Upgrade</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex flex-col gap-1 py-3 min-w-0">
+            <TabsTrigger value="settings" className="flex flex-col gap-1 py-3">
               <Settings className="w-4 h-4" />
               <span className="text-xs">Settings</span>
             </TabsTrigger>
@@ -501,7 +460,42 @@ export default function InfluencerDashboard() {
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="p-4">
             {userRole === "brand" ? (
-              <CampaignCreator />
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Campaign Creator</h2>
+                    <p className="text-gray-600">Create campaigns and find perfect influencer matches</p>
+                  </div>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Campaign
+                  </Button>
+                </div>
+                
+                <Card className="border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TargetIcon className="w-5 h-5 text-blue-600" />
+                      Active Campaigns
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <TargetIcon className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-2">Create Your First Campaign</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Start by creating a campaign to find the perfect influencers for your brand
+                      </p>
+                      <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Campaign
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             ) : (
               <div className="space-y-6">
                 <div className="text-center">
@@ -509,194 +503,95 @@ export default function InfluencerDashboard() {
                   <p className="text-gray-600">Find and apply to brand campaigns that match your niche</p>
                 </div>
                 
-                {/* Mock Campaigns */}
-                <div className="space-y-4">
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <img src="/placeholder-logo.png" alt="SportFit Pro" className="w-10 h-10 rounded-lg" />
-                          <div>
-                            <CardTitle className="text-lg">Summer Fitness Challenge</CardTitle>
-                            <p className="text-sm text-gray-600">SportFit Pro</p>
-                          </div>
-                        </div>
-                        <Badge variant="default" className="bg-green-100 text-green-700">
-                          $2,500
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 mb-4">
-                        Create engaging fitness content promoting our new protein powder. 
-                        Looking for authentic fitness influencers with engaged audiences.
-                      </p>
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-500" />
-                          <span>50K+ followers</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-500" />
-                          <span>2 weeks</span>
+                <Card className="border-0 shadow-lg">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <img src="/placeholder-logo.png" alt="SportFit Pro" className="w-10 h-10 rounded-lg" />
+                        <div>
+                          <CardTitle className="text-lg">Summer Fitness Challenge</CardTitle>
+                          <p className="text-sm text-gray-600">SportFit Pro</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1">
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Apply Now
-                        </Button>
-                        <Button variant="outline">
-                          View Details
-                        </Button>
+                      <Badge variant="default" className="bg-green-100 text-green-700">
+                        $2,500
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-4">
+                      Create engaging fitness content promoting our new protein powder. 
+                      Looking for authentic fitness influencers with engaged audiences.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gray-500" />
+                        <span>50K+ followers</span>
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <img src="/placeholder-logo.png" alt="BeautyGlow" className="w-10 h-10 rounded-lg" />
-                          <div>
-                            <CardTitle className="text-lg">Skincare Routine</CardTitle>
-                            <p className="text-sm text-gray-600">BeautyGlow</p>
-                          </div>
-                        </div>
-                        <Badge variant="default" className="bg-blue-100 text-blue-700">
-                          $1,800
-                        </Badge>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span>2 weeks</span>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 mb-4">
-                        Share your daily skincare routine featuring our new product line. 
-                        Perfect for beauty and lifestyle creators.
-                      </p>
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-500" />
-                          <span>25K+ followers</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-500" />
-                          <span>1 month</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1">
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Apply Now
-                        </Button>
-                        <Button variant="outline">
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button className="flex-1">
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Apply Now
+                      </Button>
+                      <Button variant="outline">
+                        View Details
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
           </TabsContent>
 
           {/* Inbox Tab */}
           <TabsContent value="inbox" className="p-4">
-            {userRole && <Inbox userRole={userRole} />}
-          </TabsContent>
-
-          {/* Calendar Tab */}
-          <TabsContent value="calendar" className="p-4">
-            {userRole === "creator" ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900">Content Calendar</h2>
-                  <Dialog open={showNewPostDialog} onOpenChange={setShowNewPostDialog}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Post
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create New Post</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium">Date</label>
-                          <Input
-                            type="date"
-                            value={newPost.date || ""}
-                            onChange={(e) => setNewPost({ ...newPost, date: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium">Time</label>
-                          <Input
-                            type="time"
-                            value={newPost.time || ""}
-                            onChange={(e) => setNewPost({ ...newPost, time: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium">Content</label>
-                          <Textarea
-                            placeholder="What's on your mind?"
-                            value={newPost.content || ""}
-                            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" onClick={() => setShowNewPostDialog(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleCreatePost}>Create Post</Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Inbox</h2>
+                  <p className="text-gray-600">
+                    {userRole === "creator" 
+                      ? "Manage brand collaborations and applications" 
+                      : "Review influencer applications and manage campaigns"
+                    }
+                  </p>
                 </div>
-
-                <Card className="border-0 shadow-lg">
-                  <CardContent className="p-4">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      className="rounded-md border"
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Scheduled Posts</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {posts
-                      .filter((post) => post.status === "scheduled")
-                      .map((post, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-3 h-3 rounded-full ${getStatusColor(post.status)}`} />
-                            <div>
-                              <p className="font-medium text-gray-800">{post.content}</p>
-                              <p className="text-sm text-gray-500">
-                                {post.date} at {post.time}
-                              </p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Edit
-                          </Button>
-                        </div>
-                      ))}
-                  </CardContent>
-                </Card>
               </div>
-            ) : (
-              <BrandCalendar />
-            )}
+
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-blue-600" />
+                    Messages
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-2">No Messages Yet</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {userRole === "creator" 
+                        ? "Start applying to campaigns to receive messages from brands"
+                        : "Create campaigns to start receiving applications from influencers"
+                      }
+                    </p>
+                    <Button 
+                      className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                      onClick={() => setActiveTab("campaigns")}
+                    >
+                      {userRole === "creator" ? "Browse Campaigns" : "Create Campaign"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Insights Tab */}
@@ -750,11 +645,6 @@ export default function InfluencerDashboard() {
               <CreatorRecommendations />
             </TabsContent>
           )}
-
-          {/* Subscription Tab */}
-          <TabsContent value="subscription" className="p-4">
-            {userRole && <SubscriptionPlans userRole={userRole} />}
-          </TabsContent>
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="p-4">
