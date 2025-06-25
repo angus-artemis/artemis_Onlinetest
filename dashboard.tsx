@@ -53,6 +53,7 @@ import { BrandHome } from "./components/brand/BrandHome"
 import { BrandInsights } from "./components/brand/BrandInsights"
 import { BrandSettings } from "./components/brand/BrandSettings"
 import { AccountConnection } from "./components/onboarding/AccountConnection"
+import { CampaignCreator } from "./components/brand/CampaignCreator"
 
 export default function InfluencerDashboard() {
   const [activeTab, setActiveTab] = useState("home")
@@ -460,42 +461,7 @@ export default function InfluencerDashboard() {
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="p-4">
             {userRole === "brand" ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Campaign Creator</h2>
-                    <p className="text-gray-600">Create campaigns and find perfect influencer matches</p>
-                  </div>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Campaign
-                  </Button>
-                </div>
-                
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TargetIcon className="w-5 h-5 text-blue-600" />
-                      Active Campaigns
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <TargetIcon className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="font-semibold text-lg mb-2">Create Your First Campaign</h3>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Start by creating a campaign to find the perfect influencers for your brand
-                      </p>
-                      <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Campaign
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <CampaignCreator />
             ) : (
               <div className="space-y-6">
                 <div className="text-center">

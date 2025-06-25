@@ -43,6 +43,9 @@ interface Campaign {
   createdAt: Date
   applications: number
   matches: InfluencerMatch[]
+  minFollowers?: number
+  minEngagement?: number
+  niche?: string
 }
 
 interface InfluencerMatch {
@@ -66,8 +69,12 @@ export function CampaignCreator() {
     requirements: [],
     applications: 0,
     matches: [],
+    minFollowers: 0,
+    minEngagement: 0,
+    niche: "",
   })
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
+  const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([])
 
   const mockInfluencers: InfluencerMatch[] = [
     {
@@ -122,14 +129,18 @@ export function CampaignCreator() {
         status: "active",
         createdAt: new Date(),
         applications: 0,
-        matches: mockInfluencers.filter(influencer => 
-          influencer.tags.some(tag => 
-            newCampaign.requirements?.includes(tag)
-          )
+        matches: mockInfluencers.filter(influencer =>
+          influencer.followers >= (newCampaign.minFollowers || 0) &&
+          influencer.engagement >= (newCampaign.minEngagement || 0) &&
+          (newCampaign.niche ? influencer.tags.includes(newCampaign.niche) : true)
         ),
+        minFollowers: newCampaign.minFollowers,
+        minEngagement: newCampaign.minEngagement,
+        niche: newCampaign.niche,
       }
       setCampaigns([...campaigns, campaign])
-      setNewCampaign({ status: "draft", requirements: [], applications: 0, matches: [] })
+      setSelectedCampaign(campaign)
+      setNewCampaign({ status: "draft", requirements: [], applications: 0, matches: [], minFollowers: 0, minEngagement: 0, niche: "" })
       setShowCreateDialog(false)
     }
   }
@@ -152,146 +163,182 @@ export function CampaignCreator() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Campaign Creator</h2>
-          <p className="text-gray-600">Create campaigns and find perfect influencer matches</p>
-        </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Campaign
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Campaign</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogTrigger asChild>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Campaign
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="title">Campaign Title</Label>
+              <Input
+                id="title"
+                placeholder="e.g., Summer Fitness Challenge"
+                value={newCampaign.title || ""}
+                onChange={(e) => setNewCampaign({ ...newCampaign, title: e.target.value })}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe your campaign goals and requirements..."
+                value={newCampaign.description || ""}
+                onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="title">Campaign Title</Label>
+                <Label htmlFor="budget">Budget ($)</Label>
                 <Input
-                  id="title"
-                  placeholder="e.g., Summer Fitness Challenge"
-                  value={newCampaign.title || ""}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, title: e.target.value })}
+                  id="budget"
+                  type="number"
+                  placeholder="5000"
+                  value={newCampaign.budget || ""}
+                  onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
                 />
               </div>
-              
               <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe your campaign goals and requirements..."
-                  value={newCampaign.description || ""}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="budget">Budget ($)</Label>
-                  <Input
-                    id="budget"
-                    type="number"
-                    placeholder="5000"
-                    value={newCampaign.budget || ""}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={newCampaign.category} onValueChange={(value) => setNewCampaign({ ...newCampaign, category: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fitness">Fitness</SelectItem>
-                      <SelectItem value="fashion">Fashion</SelectItem>
-                      <SelectItem value="beauty">Beauty</SelectItem>
-                      <SelectItem value="food">Food</SelectItem>
-                      <SelectItem value="travel">Travel</SelectItem>
-                      <SelectItem value="tech">Technology</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="e.g., New York, NY"
-                    value={newCampaign.location || ""}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, location: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="duration">Duration</Label>
-                  <Select value={newCampaign.duration} onValueChange={(value) => setNewCampaign({ ...newCampaign, duration: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-week">1 Week</SelectItem>
-                      <SelectItem value="2-weeks">2 Weeks</SelectItem>
-                      <SelectItem value="1-month">1 Month</SelectItem>
-                      <SelectItem value="3-months">3 Months</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>Requirements (Non-negotiables)</Label>
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Add requirement (e.g., fitness, lifestyle)"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        addRequirement(e.currentTarget.value)
-                        e.currentTarget.value = ''
-                      }
-                    }}
-                  />
-                  <Button onClick={() => {
-                    const input = document.querySelector('input[placeholder*="requirement"]') as HTMLInputElement
-                    if (input?.value) {
-                      addRequirement(input.value)
-                      input.value = ''
-                    }
-                  }}>
-                    Add
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {newCampaign.requirements?.map((req, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                      {req}
-                      <X
-                        className="w-3 h-3 cursor-pointer"
-                        onClick={() => removeRequirement(req)}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateCampaign}>
-                  Create Campaign
-                </Button>
+                <Label htmlFor="category">Category</Label>
+                <Select value={newCampaign.category} onValueChange={(value) => setNewCampaign({ ...newCampaign, category: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fitness">Fitness</SelectItem>
+                    <SelectItem value="fashion">Fashion</SelectItem>
+                    <SelectItem value="beauty">Beauty</SelectItem>
+                    <SelectItem value="food">Food</SelectItem>
+                    <SelectItem value="travel">Travel</SelectItem>
+                    <SelectItem value="tech">Technology</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="e.g., New York, NY"
+                  value={newCampaign.location || ""}
+                  onChange={(e) => setNewCampaign({ ...newCampaign, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="duration">Duration</Label>
+                <Select value={newCampaign.duration} onValueChange={(value) => setNewCampaign({ ...newCampaign, duration: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1-week">1 Week</SelectItem>
+                    <SelectItem value="2-weeks">2 Weeks</SelectItem>
+                    <SelectItem value="1-month">1 Month</SelectItem>
+                    <SelectItem value="3-months">3 Months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="minFollowers">Minimum Followers</Label>
+                <Input
+                  id="minFollowers"
+                  type="number"
+                  placeholder="e.g., 10000"
+                  value={newCampaign.minFollowers || ""}
+                  onChange={e => setNewCampaign({ ...newCampaign, minFollowers: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="minEngagement">Minimum Engagement Rate (%)</Label>
+                <Input
+                  id="minEngagement"
+                  type="number"
+                  step="0.1"
+                  placeholder="e.g., 3.5"
+                  value={newCampaign.minEngagement || ""}
+                  onChange={e => setNewCampaign({ ...newCampaign, minEngagement: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="niche">Niche</Label>
+              <Select
+                value={newCampaign.niche || ""}
+                onValueChange={val => setNewCampaign({ ...newCampaign, niche: val })}
+              >
+                <SelectTrigger id="niche">
+                  <SelectValue placeholder="Select a niche" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fitness">Fitness</SelectItem>
+                  <SelectItem value="beauty">Beauty</SelectItem>
+                  <SelectItem value="fashion">Fashion</SelectItem>
+                  <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                  <SelectItem value="sports">Sports</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Requirements (Non-negotiables)</Label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  placeholder="Add requirement (e.g., fitness, lifestyle)"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      addRequirement(e.currentTarget.value)
+                      e.currentTarget.value = ''
+                    }
+                  }}
+                />
+                <Button onClick={() => {
+                  const input = document.querySelector('input[placeholder*="requirement"]') as HTMLInputElement
+                  if (input?.value) {
+                    addRequirement(input.value)
+                    input.value = ''
+                  }
+                }}>
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {newCampaign.requirements?.map((req, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                    {req}
+                    <X
+                      className="w-3 h-3 cursor-pointer"
+                      onClick={() => removeRequirement(req)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateCampaign}>
+                Create Campaign
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Campaigns List */}
       <div className="grid gap-4">
@@ -405,6 +452,46 @@ export function CampaignCreator() {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* After campaign creation, show influencer selection if there are matches */}
+      {selectedCampaign && selectedCampaign.matches.length > 0 && (
+        <Card className="border-0 shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle>Select Influencers for Your Campaign</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {selectedCampaign.matches.map(influencer => (
+              <div key={influencer.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                <img src={influencer.avatar} alt={influencer.name} className="w-12 h-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">{influencer.name}</span>
+                    <Badge variant="secondary">{influencer.matchScore}% match</Badge>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {influencer.followers.toLocaleString()} followers • {influencer.engagement}% engagement • {influencer.tags.join(", ")}
+                  </div>
+                  <div className="text-xs text-gray-500">${influencer.price} per campaign</div>
+                  <div className="text-xs text-gray-700 mt-1">{influencer.bio}</div>
+                </div>
+                <Checkbox
+                  checked={selectedInfluencers.includes(influencer.id)}
+                  onCheckedChange={checked => {
+                    if (checked) {
+                      setSelectedInfluencers([...selectedInfluencers, influencer.id])
+                    } else {
+                      setSelectedInfluencers(selectedInfluencers.filter(id => id !== influencer.id))
+                    }
+                  }}
+                />
+              </div>
+            ))}
+            <Button className="mt-2" onClick={() => setSelectedCampaign(null)}>
+              Confirm Selection
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   )
