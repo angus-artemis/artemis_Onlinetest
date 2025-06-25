@@ -31,6 +31,8 @@ export interface Post {
 
 export interface ContentPerformance {
   type: string
+  title: string
+  platform: string
   engagement: number
   posts: number
   trend: "up" | "down" | "stable"
@@ -42,6 +44,9 @@ export interface BrandOpportunity {
   id: string
   brand: string
   category: string
+  description: string
+  budget: number
+  platform: string
   estimatedPay: string
   requirements: string
   deadline: string

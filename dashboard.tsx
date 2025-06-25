@@ -46,6 +46,9 @@ import {
   Instagram,
   Youtube,
   Twitter,
+  MessageSquare,
+  Target as TargetIcon,
+  Crown,
 } from "lucide-react"
 import { useDashboardData } from "./hooks/useDashboardData"
 import { LoadingScreen } from "./components/LoadingScreen"
@@ -60,6 +63,9 @@ import { BrandInsights } from "./components/brand/BrandInsights"
 import { BrandReport } from "./components/brand/BrandReport"
 import { BrandSettings } from "./components/brand/BrandSettings"
 import { AccountConnection } from "./components/onboarding/AccountConnection"
+import { CampaignCreator } from "./components/brand/CampaignCreator"
+import { Inbox } from "./components/Inbox"
+import { SubscriptionPlans } from "./components/SubscriptionPlans"
 
 export default function InfluencerDashboard() {
   const [activeTab, setActiveTab] = useState("home")
@@ -250,31 +256,43 @@ export default function InfluencerDashboard() {
         {/* Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
-            className={`grid w-full ${userRole === "creator" ? "grid-cols-6" : "grid-cols-5"} bg-white border-b sticky top-0 z-10`}
+            className={`grid w-full ${
+              userRole === "creator" 
+                ? "grid-cols-8" 
+                : "grid-cols-7"
+            } bg-white border-b sticky top-0 z-10 overflow-x-auto`}
           >
-            <TabsTrigger value="home" className="flex flex-col gap-1 py-3">
+            <TabsTrigger value="home" className="flex flex-col gap-1 py-3 min-w-0">
               <Home className="w-4 h-4" />
               <span className="text-xs">Home</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex flex-col gap-1 py-3">
+            <TabsTrigger value="campaigns" className="flex flex-col gap-1 py-3 min-w-0">
+              <TargetIcon className="w-4 h-4" />
+              <span className="text-xs">{userRole === "creator" ? "Campaigns" : "Create"}</span>
+            </TabsTrigger>
+            <TabsTrigger value="inbox" className="flex flex-col gap-1 py-3 min-w-0">
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-xs">Inbox</span>
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex flex-col gap-1 py-3 min-w-0">
               <CalendarIcon className="w-4 h-4" />
               <span className="text-xs">Calendar</span>
             </TabsTrigger>
-            <TabsTrigger value="insights" className="flex flex-col gap-1 py-3">
+            <TabsTrigger value="insights" className="flex flex-col gap-1 py-3 min-w-0">
               <BarChart3 className="w-4 h-4" />
               <span className="text-xs">Insights</span>
             </TabsTrigger>
             {userRole === "creator" && (
-              <TabsTrigger value="recommendations" className="flex flex-col gap-1 py-3">
+              <TabsTrigger value="recommendations" className="flex flex-col gap-1 py-3 min-w-0">
                 <Lightbulb className="w-4 h-4" />
                 <span className="text-xs">Tips</span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="brand" className="flex flex-col gap-1 py-3">
-              <FileText className="w-4 h-4" />
-              <span className="text-xs">{userRole === "creator" ? "Brand" : "Report"}</span>
+            <TabsTrigger value="subscription" className="flex flex-col gap-1 py-3 min-w-0">
+              <Crown className="w-4 h-4" />
+              <span className="text-xs">Upgrade</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex flex-col gap-1 py-3">
+            <TabsTrigger value="settings" className="flex flex-col gap-1 py-3 min-w-0">
               <Settings className="w-4 h-4" />
               <span className="text-xs">Settings</span>
             </TabsTrigger>
@@ -400,66 +418,78 @@ export default function InfluencerDashboard() {
                       <Target className="w-5 h-5 text-purple-500" />
                       What's Working
                     </CardTitle>
-                    <p className="text-sm text-gray-600">Your best performing content types</p>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {contentPerformance.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                              item.type === "Reels"
-                                ? "bg-pink-100"
-                                : item.type === "Carousels"
-                                  ? "bg-blue-100"
-                                  : item.type === "Stories"
-                                    ? "bg-green-100"
-                                    : "bg-gray-100"
-                            }`}
-                          >
-                            {item.type === "Reels" ? (
-                              <Play className="w-4 h-4 text-pink-600" />
-                            ) : item.type === "Carousels" ? (
-                              <ImageIcon className="w-4 h-4 text-blue-600" />
-                            ) : item.type === "Stories" ? (
-                              <Eye className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <ImageIcon className="w-4 h-4 text-gray-600" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">{item.type}</p>
-                            <p className="text-xs text-gray-500">{item.posts} posts</p>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Instagram className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">Instagram</span>
+                        </div>
+                        <p className="text-2xl font-bold text-green-600">
+                          <AnimatedCounter end={4.8} suffix="%" />
+                        </p>
+                        <p className="text-xs text-green-600">engagement rate</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Youtube className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-700">YouTube</span>
+                        </div>
+                        <p className="text-2xl font-bold text-blue-600">
+                          <AnimatedCounter end={6.2} suffix="%" />
+                        </p>
+                        <p className="text-xs text-blue-600">engagement rate</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">Fitness content is 🔥</p>
+                          <p className="text-sm text-gray-600">Your workout videos get 3x more engagement</p>
+                        </div>
+                        <Button size="sm" variant="outline">
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Brand Opportunities */}
+                <Card className="border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-green-500" />
+                      Brand Opportunities
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {brandOpportunities.slice(0, 2).map((opportunity, index) => (
+                      <div key={index} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-400 rounded-lg flex items-center justify-center">
+                          <DollarSign className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">{opportunity.brand}</p>
+                          <p className="text-sm text-gray-600">{opportunity.description}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs text-green-600 font-medium">${opportunity.budget}</span>
+                            <span className="text-xs text-gray-500">{opportunity.platform}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-sm">{item.engagement}%</p>
-                          <div className="flex items-center gap-1">
-                            {item.trend === "up" ? (
-                              <TrendingUp className="w-3 h-3 text-green-500" />
-                            ) : item.trend === "down" ? (
-                              <TrendingDown className="w-3 h-3 text-red-500" />
-                            ) : (
-                              <div className="w-3 h-3 bg-gray-400 rounded-full" />
-                            )}
-                            <span
-                              className={`text-xs ${
-                                item.trend === "up"
-                                  ? "text-green-600"
-                                  : item.trend === "down"
-                                    ? "text-red-600"
-                                    : "text-gray-600"
-                              }`}
-                            >
-                              {item.trend === "up" ? "Growing" : item.trend === "down" ? "Declining" : "Stable"}
-                            </span>
-                          </div>
-                        </div>
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                          Apply
+                        </Button>
                       </div>
                     ))}
+                    <Button variant="outline" className="w-full">
+                      View All Opportunities
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -468,152 +498,197 @@ export default function InfluencerDashboard() {
             )}
           </TabsContent>
 
-          {/* Calendar Tab with Interactive Features */}
-          <TabsContent value="calendar" className="p-0">
-            {userRole === "creator" ? (
-              <div className="p-4 space-y-6">
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Content Calendar</CardTitle>
-                        <p className="text-sm text-gray-600">Plan your posts for maximum impact</p>
-                      </div>
-                      <Dialog open={showNewPostDialog} onOpenChange={setShowNewPostDialog}>
-                        <DialogTrigger asChild>
-                          <Button size="sm" className="bg-gradient-to-r from-purple-500 to-blue-500">
-                            <Plus className="w-4 h-4 mr-1" />
-                            New Post
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Create New Post</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="text-sm font-medium">Content</label>
-                              <Textarea
-                                placeholder="What's your post about?"
-                                value={newPost.content || ""}
-                                onChange={(e) => setNewPost((prev) => ({ ...prev, content: e.target.value }))}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-sm font-medium">Date</label>
-                                <Input
-                                  type="date"
-                                  value={newPost.date || ""}
-                                  onChange={(e) => setNewPost((prev) => ({ ...prev, date: e.target.value }))}
-                                />
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Time</label>
-                                <Input
-                                  type="time"
-                                  value={newPost.time || ""}
-                                  onChange={(e) => setNewPost((prev) => ({ ...prev, time: e.target.value }))}
-                                />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-sm font-medium">Type</label>
-                                <Select
-                                  value={newPost.type}
-                                  onValueChange={(value) =>
-                                    setNewPost((prev) => ({ ...prev, type: value as Post["type"] }))
-                                  }
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Post">Post</SelectItem>
-                                    <SelectItem value="Reel">Reel</SelectItem>
-                                    <SelectItem value="Carousel">Carousel</SelectItem>
-                                    <SelectItem value="Story">Story</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Status</label>
-                                <Select
-                                  value={newPost.status}
-                                  onValueChange={(value) =>
-                                    setNewPost((prev) => ({ ...prev, status: value as Post["status"] }))
-                                  }
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="idea">Idea</SelectItem>
-                                    <SelectItem value="draft">Draft</SelectItem>
-                                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                            <Button onClick={handleCreatePost} className="w-full">
-                              Create Post
-                            </Button>
+          {/* Campaigns Tab */}
+          <TabsContent value="campaigns" className="p-4">
+            {userRole === "brand" ? (
+              <CampaignCreator />
+            ) : (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Available Campaigns</h2>
+                  <p className="text-gray-600">Find and apply to brand campaigns that match your niche</p>
+                </div>
+                
+                {/* Mock Campaigns */}
+                <div className="space-y-4">
+                  <Card className="border-0 shadow-lg">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <img src="/placeholder-logo.png" alt="SportFit Pro" className="w-10 h-10 rounded-lg" />
+                          <div>
+                            <CardTitle className="text-lg">Summer Fitness Challenge</CardTitle>
+                            <p className="text-sm text-gray-600">SportFit Pro</p>
                           </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
+                        </div>
+                        <Badge variant="default" className="bg-green-100 text-green-700">
+                          $2,500
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-700 mb-4">
+                        Create engaging fitness content promoting our new protein powder. 
+                        Looking for authentic fitness influencers with engaged audiences.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span>50K+ followers</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-500" />
+                          <span>2 weeks</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button className="flex-1">
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Apply Now
+                        </Button>
+                        <Button variant="outline">
+                          View Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-0 shadow-lg">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <img src="/placeholder-logo.png" alt="BeautyGlow" className="w-10 h-10 rounded-lg" />
+                          <div>
+                            <CardTitle className="text-lg">Skincare Routine</CardTitle>
+                            <p className="text-sm text-gray-600">BeautyGlow</p>
+                          </div>
+                        </div>
+                        <Badge variant="default" className="bg-blue-100 text-blue-700">
+                          $1,800
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-700 mb-4">
+                        Share your daily skincare routine featuring our new product line. 
+                        Perfect for beauty and lifestyle creators.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span>25K+ followers</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-500" />
+                          <span>1 month</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button className="flex-1">
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Apply Now
+                        </Button>
+                        <Button variant="outline">
+                          View Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Inbox Tab */}
+          <TabsContent value="inbox" className="p-4">
+            {userRole && <Inbox userRole={userRole} />}
+          </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="calendar" className="p-4">
+            {userRole === "creator" ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">Content Calendar</h2>
+                  <Dialog open={showNewPostDialog} onOpenChange={setShowNewPostDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        New Post
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New Post</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Date</label>
+                          <Input
+                            type="date"
+                            value={newPost.date || ""}
+                            onChange={(e) => setNewPost({ ...newPost, date: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Time</label>
+                          <Input
+                            type="time"
+                            value={newPost.time || ""}
+                            onChange={(e) => setNewPost({ ...newPost, time: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Content</label>
+                          <Textarea
+                            placeholder="What's on your mind?"
+                            value={newPost.content || ""}
+                            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" onClick={() => setShowNewPostDialog(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleCreatePost}>Create Post</Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-4">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
                       onSelect={setSelectedDate}
-                      className="rounded-md border-0"
+                      className="rounded-md border"
                     />
                   </CardContent>
                 </Card>
 
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
-                    <CardTitle>Upcoming Posts</CardTitle>
+                    <CardTitle>Scheduled Posts</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     {posts
-                      .filter((p) => p.status !== "published")
+                      .filter((post) => post.status === "scheduled")
                       .map((post, index) => (
-                        <div
-                          key={post.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                        >
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-lg flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">{post.date.split(" ")[1]}</span>
-                            </div>
+                            <div className={`w-3 h-3 rounded-full ${getStatusColor(post.status)}`} />
                             <div>
-                              <p className="font-medium text-sm">{post.content}</p>
-                              <p className="text-xs text-gray-500">
-                                {post.time} • {post.type}
+                              <p className="font-medium text-gray-800">{post.content}</p>
+                              <p className="text-sm text-gray-500">
+                                {post.date} at {post.time}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={getStatusColor(post.status)}>
-                              {getStatusIcon(post.status)}
-                              <span className="ml-1">{post.status}</span>
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const nextStatus =
-                                  post.status === "idea" ? "draft" : post.status === "draft" ? "scheduled" : "published"
-                                updatePostStatus(post.id, nextStatus)
-                              }}
-                            >
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
                         </div>
                       ))}
                   </CardContent>
@@ -624,93 +699,43 @@ export default function InfluencerDashboard() {
             )}
           </TabsContent>
 
-          {/* Enhanced Insights Tab */}
-          <TabsContent value="insights" className="p-0">
+          {/* Insights Tab */}
+          <TabsContent value="insights" className="p-4">
             {userRole === "creator" ? (
-              <div className="p-4 space-y-6">
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-gray-900">Analytics & Insights</h2>
+                
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
-                    <CardTitle>Growth Analytics</CardTitle>
-                    <p className="text-sm text-gray-600">Your account is on fire! 🔥</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Follower Growth</span>
-                        <span className="font-semibold text-green-600">+{weeklyGrowth.toFixed(1)}%</span>
-                      </div>
-                      <Progress value={Math.min(weeklyGrowth * 8, 100)} className="h-2" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Engagement Rate</span>
-                        <span className="font-semibold text-blue-600">{avgEngagement}%</span>
-                      </div>
-                      <Progress value={avgEngagement * 10} className="h-2" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Content Consistency</span>
-                        <span className="font-semibold text-purple-600">92%</span>
-                      </div>
-                      <Progress value={92} className="h-2" />
-                    </div>
-
-                    {/* Interactive Chart */}
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <h4 className="font-medium text-sm mb-3">Engagement Trend</h4>
-                      <InteractiveChart
-                        data={analyticsData}
-                        dataKey="engagement"
-                        color="#3B82F6"
-                        title="Engagement Rate"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Best Posting Times</CardTitle>
-                    <p className="text-sm text-gray-600">When your audience is most active</p>
+                    <CardTitle>Performance Overview</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-3 bg-orange-50 rounded-xl">
-                        <p className="text-lg font-bold text-orange-600">6:30 PM</p>
-                        <p className="text-sm text-orange-700">Weekdays</p>
-                        <p className="text-xs text-orange-600 mt-1">Peak engagement</p>
-                      </div>
-                      <div className="text-center p-3 bg-blue-50 rounded-xl">
-                        <p className="text-lg font-bold text-blue-600">10:00 AM</p>
-                        <p className="text-sm text-blue-700">Weekends</p>
-                        <p className="text-xs text-blue-600 mt-1">High reach</p>
-                      </div>
-                    </div>
+                    <InteractiveChart data={analyticsData} dataKey="followers" color="#8B5CF6" title="Followers" />
                   </CardContent>
                 </Card>
 
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
-                    <CardTitle>Audience Insights</CardTitle>
+                    <CardTitle>Content Performance</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <p className="text-2xl font-bold text-purple-600">68%</p>
-                        <p className="text-xs text-gray-600">Female</p>
+                    {contentPerformance.map((content, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-lg flex items-center justify-center">
+                            <ImageIcon className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800">{content.title}</p>
+                            <p className="text-sm text-gray-500">{content.platform}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600">{content.engagement}%</p>
+                          <p className="text-xs text-gray-500">engagement</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-2xl font-bold text-blue-600">25-34</p>
-                        <p className="text-xs text-gray-600">Top Age</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-green-600">US</p>
-                        <p className="text-xs text-gray-600">Top Country</p>
-                      </div>
-                    </div>
+                    ))}
                   </CardContent>
                 </Card>
               </div>
@@ -719,212 +744,55 @@ export default function InfluencerDashboard() {
             )}
           </TabsContent>
 
-          {/* Recommendations Tab - Creator Only */}
+          {/* Recommendations Tab (Creator only) */}
           {userRole === "creator" && (
-            <TabsContent value="recommendations" className="p-0">
+            <TabsContent value="recommendations" className="p-4">
               <CreatorRecommendations />
             </TabsContent>
           )}
 
-          {/* Enhanced Brand Report Tab */}
-          <TabsContent value="brand" className="p-0">
-            {userRole === "creator" ? (
-              <div className="p-4 space-y-6">
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Brand Partnerships</CardTitle>
-                    <p className="text-sm text-gray-600">Your collaboration opportunities</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Trophy className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="font-semibold text-lg mb-2">You're Brand-Ready!</h3>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Your engagement rate qualifies you for premium partnerships
-                      </p>
-                      <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                        Explore Opportunities
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Available Partnerships</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {brandOpportunities.map((opportunity) => (
-                      <div key={opportunity.id} className="border rounded-xl p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h4 className="font-semibold text-sm">{opportunity.brand}</h4>
-                            <p className="text-xs text-gray-500">{opportunity.category}</p>
-                          </div>
-                          <Badge
-                            className={
-                              opportunity.status === "available"
-                                ? "bg-green-100 text-green-800"
-                                : opportunity.status === "negotiating"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-blue-100 text-blue-800"
-                            }
-                          >
-                            {opportunity.status}
-                          </Badge>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Estimated Pay:</span>
-                            <span className="font-medium">{opportunity.estimatedPay}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Requirements:</span>
-                            <span className="font-medium">{opportunity.requirements}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Deadline:</span>
-                            <span className="font-medium">{opportunity.deadline}</span>
-                          </div>
-                        </div>
-                        <Button
-                          className="w-full mt-3"
-                          variant={opportunity.status === "available" ? "default" : "outline"}
-                          disabled={opportunity.status === "negotiating"}
-                        >
-                          {opportunity.status === "available"
-                            ? "Apply Now"
-                            : opportunity.status === "negotiating"
-                              ? "In Progress"
-                              : "View Details"}
-                        </Button>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <BrandReport />
-            )}
+          {/* Subscription Tab */}
+          <TabsContent value="subscription" className="p-4">
+            {userRole && <SubscriptionPlans userRole={userRole} />}
           </TabsContent>
 
-          {/* Enhanced Settings Tab */}
-          <TabsContent value="settings" className="p-0">
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="p-4">
             {userRole === "creator" ? (
-              <div className="p-4 space-y-6">
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+                
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle>Account Settings</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between py-2 border-b">
-                      <div className="flex items-center gap-3">
-                        <Bell className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm">Notifications</span>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Email Notifications</p>
+                        <p className="text-sm text-gray-500">Get notified about new opportunities</p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b">
-                      <div className="flex items-center gap-3">
-                        <Smartphone className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm">Connected Accounts</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">3 connected</Badge>
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b">
-                      <div className="flex items-center gap-3">
-                        <Shield className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm">Privacy & Security</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b">
-                      <div className="flex items-center gap-3">
-                        <Globe className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm">Language & Region</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b">
-                      <div className="flex items-center gap-3">
-                        <HelpCircle className="w-5 h-5 text-gray-600" />
-                        <span className="text-sm">Help & Support</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <div className="flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
-                        <LogOut className="w-5 h-5 text-red-600" />
-                        <span className="text-sm text-red-600">Sign Out</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Connected Accounts</CardTitle>
-                    <p className="text-sm text-gray-600">Manage your social media connections</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between py-2 border-b">
-                      <div className="flex items-center gap-3">
-                        <Instagram className="w-5 h-5 text-pink-500" />
-                        <div>
-                          <span className="text-sm font-medium">Instagram</span>
-                          <p className="text-xs text-gray-500">@alexfitness • 24.5k followers</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-green-100 text-green-800">Connected</Badge>
-                        <Button variant="outline" size="sm">
-                          Manage
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between py-2 border-b opacity-50">
-                      <div className="flex items-center gap-3">
-                        <Youtube className="w-5 h-5 text-red-500" />
-                        <span className="text-sm">YouTube</span>
-                      </div>
-                      <Button variant="outline" size="sm" disabled>
-                        Coming Soon
+                      <Button variant="outline" size="sm">
+                        Configure
                       </Button>
                     </div>
-                    <div className="flex items-center justify-between py-2 opacity-50">
-                      <div className="flex items-center gap-3">
-                        <Twitter className="w-5 h-5 text-blue-500" />
-                        <span className="text-sm">Twitter/X</span>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Privacy Settings</p>
+                        <p className="text-sm text-gray-500">Control your profile visibility</p>
                       </div>
-                      <Button variant="outline" size="sm" disabled>
-                        Coming Soon
+                      <Button variant="outline" size="sm">
+                        Manage
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>App Info</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm text-gray-600">
-                    <div className="flex justify-between">
-                      <span>Version</span>
-                      <span>2.1.0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Last Updated</span>
-                      <span>Dec 10, 2024</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Data Usage</span>
-                      <span>12.4 MB</span>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Connected Accounts</p>
+                        <p className="text-sm text-gray-500">Manage your social media connections</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        View
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -938,3 +806,5 @@ export default function InfluencerDashboard() {
     </div>
   )
 }
+
+
