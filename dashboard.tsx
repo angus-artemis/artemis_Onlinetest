@@ -41,6 +41,8 @@ import {
   Twitter,
   MessageSquare,
   Target as TargetIcon,
+  Search,
+  User,
 } from "lucide-react"
 import { useDashboardData } from "./hooks/useDashboardData"
 import { LoadingScreen } from "./components/LoadingScreen"
@@ -54,6 +56,10 @@ import { BrandInsights } from "./components/brand/BrandInsights"
 import { BrandSettings } from "./components/brand/BrandSettings"
 import { AccountConnection } from "./components/onboarding/AccountConnection"
 import { CampaignCreator } from "./components/brand/CampaignCreator"
+import { InfluencerDiscovery } from "@/components/brand/InfluencerDiscovery"
+import { AdvancedAnalytics } from "@/components/creator/AdvancedAnalytics"
+import { ProfileSystem } from "@/components/ProfileSystem"
+import { Inbox } from "@/components/Inbox"
 
 export default function InfluencerDashboard() {
   const [activeTab, setActiveTab] = useState("home")
@@ -77,9 +83,13 @@ export default function InfluencerDashboard() {
   } = useDashboardData()
 
   useEffect(() => {
-    // On mount, check if Instagram is already connected (from signup)
+    // On mount, check if user is already authenticated and Instagram is connected
     if (typeof window !== "undefined") {
+      const auth = localStorage.getItem("isAuthenticated") === "true"
+      const role = localStorage.getItem("userRole") as "creator" | "brand" | null
       const connected = localStorage.getItem("accountsConnected") === "true"
+      setIsAuthenticated(auth)
+      setUserRole(role)
       setAccountsConnected(connected)
     }
   }, [])
@@ -87,6 +97,10 @@ export default function InfluencerDashboard() {
   const handleLogin = (role: "creator" | "brand") => {
     setUserRole(role)
     setIsAuthenticated(true)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("isAuthenticated", "true")
+      localStorage.setItem("userRole", role)
+    }
     // Don't set accountsConnected to true yet - user needs to connect accounts
   }
 
@@ -94,6 +108,18 @@ export default function InfluencerDashboard() {
     setAccountsConnected(true)
     if (typeof window !== "undefined") {
       localStorage.setItem("accountsConnected", "true")
+    }
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setUserRole(null)
+    setAccountsConnected(false)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("isAuthenticated")
+      localStorage.removeItem("userRole")
+      localStorage.removeItem("accountsConnected")
+      window.location.reload()
     }
   }
 
@@ -169,12 +195,23 @@ export default function InfluencerDashboard() {
                 </p>
               </div>
             </div>
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              {userRole === "creator" ? (
-                <Trophy className="w-6 h-6 text-yellow-300" />
-              ) : (
-                <TrendingUp className="w-6 h-6 text-green-300" />
-              )}
+            <div className="flex items-center gap-2">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                {userRole === "creator" ? (
+                  <Trophy className="w-6 h-6 text-yellow-300" />
+                ) : (
+                  <TrendingUp className="w-6 h-6 text-green-300" />
+                )}
+              </div>
+              {/* Logout Button */}
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/10 ml-2"
+                onClick={handleLogout}
+                title="Log out"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
             </div>
           </div>
 
@@ -237,8 +274,8 @@ export default function InfluencerDashboard() {
           <TabsList
             className={`grid w-full ${
               userRole === "creator" 
-                ? "grid-cols-6" 
-                : "grid-cols-5"
+                ? "grid-cols-7" 
+                : "grid-cols-6"
             } bg-white border-b sticky top-0 z-10`}
           >
             <TabsTrigger value="home" className="flex flex-col gap-1 py-3">
@@ -249,13 +286,19 @@ export default function InfluencerDashboard() {
               <TargetIcon className="w-4 h-4" />
               <span className="text-xs">{userRole === "creator" ? "Campaigns" : "Create"}</span>
             </TabsTrigger>
+            {userRole === "brand" && (
+              <TabsTrigger value="discover" className="flex flex-col gap-1 py-3">
+                <Search className="w-4 h-4" />
+                <span className="text-xs">Discover</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="inbox" className="flex flex-col gap-1 py-3">
               <MessageSquare className="w-4 h-4" />
               <span className="text-xs">Inbox</span>
             </TabsTrigger>
             <TabsTrigger value="insights" className="flex flex-col gap-1 py-3">
               <BarChart3 className="w-4 h-4" />
-              <span className="text-xs">Insights</span>
+              <span className="text-xs">Analytics</span>
             </TabsTrigger>
             {userRole === "creator" && (
               <TabsTrigger value="recommendations" className="flex flex-col gap-1 py-3">
@@ -263,6 +306,10 @@ export default function InfluencerDashboard() {
                 <span className="text-xs">Tips</span>
               </TabsTrigger>
             )}
+            <TabsTrigger value="profile" className="flex flex-col gap-1 py-3">
+              <User className="w-4 h-4" />
+              <span className="text-xs">Profile</span>
+            </TabsTrigger>
             <TabsTrigger value="settings" className="flex flex-col gap-1 py-3">
               <Settings className="w-4 h-4" />
               <span className="text-xs">Settings</span>
@@ -525,92 +572,22 @@ export default function InfluencerDashboard() {
             )}
           </TabsContent>
 
-          {/* Inbox Tab */}
-          <TabsContent value="inbox" className="p-4">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Inbox</h2>
-                  <p className="text-gray-600">
-                    {userRole === "creator" 
-                      ? "Manage brand collaborations and applications" 
-                      : "Review influencer applications and manage campaigns"
-                    }
-                  </p>
-                </div>
-              </div>
+          {/* Discover Tab (Brand only) */}
+          {userRole === "brand" && (
+            <TabsContent value="discover" className="p-0">
+              <InfluencerDiscovery />
+            </TabsContent>
+          )}
 
-              <Card className="glass-card border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-blue-600" />
-                    Messages
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <MessageSquare className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2">No Messages Yet</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {userRole === "creator" 
-                        ? "Start applying to campaigns to receive messages from brands"
-                        : "Create campaigns to start receiving applications from influencers"
-                      }
-                    </p>
-                    <Button 
-                      className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                      onClick={() => setActiveTab("campaigns")}
-                    >
-                      {userRole === "creator" ? "Browse Campaigns" : "Create Campaign"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Inbox Tab */}
+          <TabsContent value="inbox" className="p-0">
+            <Inbox />
           </TabsContent>
 
-          {/* Insights Tab */}
-          <TabsContent value="insights" className="p-4">
+          {/* Analytics Tab */}
+          <TabsContent value="insights" className="p-0">
             {userRole === "creator" ? (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Analytics & Insights</h2>
-                
-                <Card className="glass-card border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Performance Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <InteractiveChart data={analyticsData} dataKey="followers" color="#8B5CF6" title="Followers" />
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-card border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle>Content Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {contentPerformance.map((content, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-lg flex items-center justify-center">
-                            <ImageIcon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-800">{content.title}</p>
-                            <p className="text-sm text-gray-500">{content.platform}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-green-600">{content.engagement}%</p>
-                          <p className="text-xs text-gray-500">engagement</p>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+              <AdvancedAnalytics />
             ) : (
               <BrandInsights />
             )}
@@ -622,6 +599,11 @@ export default function InfluencerDashboard() {
               <CreatorRecommendations />
             </TabsContent>
           )}
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="p-0">
+            {userRole && <ProfileSystem userRole={userRole} />}
+          </TabsContent>
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="p-4">

@@ -1,443 +1,449 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   MessageSquare,
   Send,
   Search,
   Filter,
   MoreHorizontal,
-  CheckCircle,
   Clock,
-  DollarSign,
-  Users,
-  TrendingUp,
+  CheckCircle,
   Star,
+  DollarSign,
+  Target,
   Calendar,
-  MapPin,
+  User,
+  Briefcase,
 } from "lucide-react"
 
 interface Message {
   id: string
-  sender: {
+  senderId: string
+  receiverId: string
+  content: string
+  timestamp: Date
+  read: boolean
+  type: "text" | "campaign" | "proposal" | "payment"
+  campaignId?: string
+  attachments?: string[]
+}
+
+interface Conversation {
+  id: string
+  participant: {
     id: string
     name: string
     avatar: string
     type: "brand" | "influencer"
+    verified: boolean
   }
-  content: string
-  timestamp: Date
-  isRead: boolean
-  campaignId?: string
-  applicationId?: string
-}
-
-interface Application {
-  id: string
-  campaignTitle: string
-  influencer: {
+  lastMessage: Message
+  unreadCount: number
+  campaign?: {
     id: string
-    name: string
-    avatar: string
-    followers: number
-    engagement: number
-    price: number
+    title: string
+    budget: number
+    status: "active" | "completed" | "cancelled"
   }
-  status: "pending" | "accepted" | "rejected" | "negotiating"
-  message: string
-  timestamp: Date
-  budget: number
 }
 
-interface Campaign {
+interface User {
   id: string
-  title: string
-  brand: {
-    id: string
-    name: string
-    avatar: string
-  }
-  budget: number
-  status: "active" | "completed" | "cancelled"
-  timestamp: Date
+  name: string
+  avatar: string
+  type: "brand" | "influencer"
+  verified: boolean
 }
 
-export function Inbox({ userRole }: { userRole: "creator" | "brand" }) {
-  const [activeTab, setActiveTab] = useState("messages")
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
+export function Inbox() {
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentUser] = useState<User>({
+    id: "current-user",
+    name: "Current User",
+    avatar: "/placeholder-user.jpg",
+    type: "brand",
+    verified: true,
+  })
 
-  const mockMessages: Message[] = [
+  // Mock data
+  const mockConversations: Conversation[] = [
     {
       id: "1",
-      sender: {
-        id: "brand1",
-        name: "SportFit Pro",
-        avatar: "/placeholder-logo.png",
-        type: "brand"
+      participant: {
+        id: "influencer-1",
+        name: "Alex Chen",
+        avatar: "/placeholder-user.jpg",
+        type: "influencer",
+        verified: true,
       },
-      content: "Hi Alex! We loved your fitness content and would love to collaborate on our new protein powder campaign.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      isRead: false,
-      campaignId: "campaign1"
+      lastMessage: {
+        id: "msg-1",
+        senderId: "influencer-1",
+        receiverId: "current-user",
+        content: "Hi! I'm interested in your fitness campaign. I have 125K followers and 4.2% engagement rate.",
+        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+        read: false,
+        type: "text",
+      },
+      unreadCount: 1,
+      campaign: {
+        id: "campaign-1",
+        title: "Summer Fitness Challenge",
+        budget: 2500,
+        status: "active",
+      },
     },
     {
       id: "2",
-      sender: {
-        id: "influencer1",
+      participant: {
+        id: "influencer-2",
         name: "Sarah Kim",
         avatar: "/placeholder-user.jpg",
-        type: "influencer"
+        type: "influencer",
+        verified: true,
       },
-      content: "Thank you for the opportunity! I'm very interested in your campaign. What are the specific requirements?",
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
-      isRead: true,
-      campaignId: "campaign1"
+      lastMessage: {
+        id: "msg-2",
+        senderId: "current-user",
+        receiverId: "influencer-2",
+        content: "Perfect! Let's discuss the campaign details and timeline.",
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+        read: true,
+        type: "text",
+      },
+      unreadCount: 0,
+      campaign: {
+        id: "campaign-1",
+        title: "Summer Fitness Challenge",
+        budget: 2500,
+        status: "active",
+      },
     },
     {
       id: "3",
-      sender: {
-        id: "brand1",
+      participant: {
+        id: "brand-1",
         name: "SportFit Pro",
         avatar: "/placeholder-logo.png",
-        type: "brand"
+        type: "brand",
+        verified: true,
       },
-      content: "We need 3 Instagram posts and 2 TikTok videos over 2 weeks. Budget is $2,500. Does that work for you?",
-      timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-      isRead: false,
-      campaignId: "campaign1"
-    }
+      lastMessage: {
+        id: "msg-3",
+        senderId: "brand-1",
+        receiverId: "current-user",
+        content: "We loved your recent fitness content! Would you be interested in a collaboration?",
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+        read: true,
+        type: "campaign",
+      },
+      unreadCount: 0,
+    },
   ]
 
-  const mockApplications: Application[] = [
+  const mockMessages: Message[] = [
     {
-      id: "app1",
-      campaignTitle: "Summer Fitness Challenge",
-      influencer: {
-        id: "inf1",
-        name: "Alex Chen",
-        avatar: "/placeholder-user.jpg",
-        followers: 125000,
-        engagement: 4.2,
-        price: 2500
-      },
-      status: "pending",
-      message: "I'm excited about your fitness challenge! I have a strong following in the fitness space and would love to be part of this campaign.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      budget: 2500
+      id: "msg-1",
+      senderId: "influencer-1",
+      receiverId: "current-user",
+      content: "Hi! I'm interested in your fitness campaign. I have 125K followers and 4.2% engagement rate.",
+      timestamp: new Date(Date.now() - 1000 * 60 * 30),
+      read: false,
+      type: "text",
     },
     {
-      id: "app2",
-      campaignTitle: "Summer Fitness Challenge",
-      influencer: {
-        id: "inf2",
-        name: "Mike Johnson",
-        avatar: "/placeholder-user.jpg",
-        followers: 210000,
-        engagement: 3.8,
-        price: 3500
-      },
-      status: "negotiating",
-      message: "Great campaign idea! I'd love to discuss the terms and see if we can work something out.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
-      budget: 3500
-    }
-  ]
-
-  const mockCampaigns: Campaign[] = [
+      id: "msg-2",
+      senderId: "current-user",
+      receiverId: "influencer-1",
+      content: "Hi Alex! Thanks for reaching out. Can you tell me more about your audience demographics?",
+      timestamp: new Date(Date.now() - 1000 * 60 * 25),
+      read: true,
+      type: "text",
+    },
     {
-      id: "camp1",
-      title: "Summer Fitness Challenge",
-      brand: {
-        id: "brand1",
-        name: "SportFit Pro",
-        avatar: "/placeholder-logo.png"
-      },
-      budget: 5000,
-      status: "active",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
-    }
+      id: "msg-3",
+      senderId: "influencer-1",
+      receiverId: "current-user",
+      content: "Of course! My audience is primarily 25-34 year olds (45%), mostly female (65%), interested in fitness, wellness, and healthy living. I'm based in LA and my engagement rate is consistently above 4%.",
+      timestamp: new Date(Date.now() - 1000 * 60 * 20),
+      read: true,
+      type: "text",
+    },
+    {
+      id: "msg-4",
+      senderId: "current-user",
+      receiverId: "influencer-1",
+      content: "That sounds perfect for our target audience! The campaign budget is $2,500 and we're looking for 3-4 posts over 2 weeks. Would that work for you?",
+      timestamp: new Date(Date.now() - 1000 * 60 * 15),
+      read: true,
+      type: "text",
+    },
   ]
 
-  const conversations = userRole === "creator" 
-    ? mockMessages.filter(m => m.sender.type === "brand")
-    : mockMessages.filter(m => m.sender.type === "influencer")
+  useEffect(() => {
+    setConversations(mockConversations)
+  }, [])
 
-  const applications = userRole === "brand" ? mockApplications : []
-  const campaigns = userRole === "creator" ? mockCampaigns : []
+  useEffect(() => {
+    if (selectedConversation) {
+      setMessages(mockMessages)
+    }
+  }, [selectedConversation])
+
+  const filteredConversations = conversations.filter(conversation =>
+    conversation.participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    conversation.lastMessage.content.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const handleSendMessage = () => {
-    if (newMessage.trim() && selectedConversation) {
-      // In a real app, this would send the message to the backend
-      console.log("Sending message:", newMessage)
-      setNewMessage("")
+    if (!newMessage.trim() || !selectedConversation) return
+
+    const message: Message = {
+      id: `msg-${Date.now()}`,
+      senderId: currentUser.id,
+      receiverId: selectedConversation.participant.id,
+      content: newMessage,
+      timestamp: new Date(),
+      read: false,
+      type: "text",
     }
+
+    setMessages([...messages, message])
+    setNewMessage("")
+
+    // Update conversation's last message
+    setConversations(conversations.map(conv =>
+      conv.id === selectedConversation.id
+        ? { ...conv, lastMessage: message, unreadCount: 0 }
+        : conv
+    ))
   }
 
-  const handleApplicationAction = (applicationId: string, action: "accept" | "reject") => {
-    // In a real app, this would update the application status
-    console.log(`${action} application:`, applicationId)
+  const formatTimestamp = (timestamp: Date) => {
+    const now = new Date()
+    const diff = now.getTime() - timestamp.getTime()
+    const minutes = Math.floor(diff / (1000 * 60))
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    return `${days}d ago`
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Inbox</h2>
-          <p className="text-gray-600">
-            {userRole === "creator" 
-              ? "Manage brand collaborations and applications" 
-              : "Review influencer applications and manage campaigns"
-            }
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="h-full flex">
+      {/* Conversations List */}
+      <div className="w-1/3 border-r bg-white">
+        <div className="p-4 border-b">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Messages</h2>
+            <Button variant="outline" size="sm">
+              <Filter className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search conversations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-64"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
             />
           </div>
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
         </div>
+
+        <ScrollArea className="h-[calc(100vh-200px)]">
+          <div className="space-y-1">
+            {filteredConversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                  selectedConversation?.id === conversation.id ? "bg-blue-50 border-r-2 border-blue-500" : ""
+                }`}
+                onClick={() => setSelectedConversation(conversation)}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="relative">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={conversation.participant.avatar} />
+                      <AvatarFallback>
+                        {conversation.participant.name.split(" ").map(n => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    {conversation.participant.verified && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-2 h-2 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-sm truncate">
+                          {conversation.participant.name}
+                        </h3>
+                        <Badge variant="outline" className="text-xs">
+                          {conversation.participant.type === "influencer" ? "Creator" : "Brand"}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {formatTimestamp(conversation.lastMessage.timestamp)}
+                      </span>
+                    </div>
+                    
+                    {conversation.campaign && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Target className="w-3 h-3 text-gray-400" />
+                        <span className="text-xs text-gray-600 truncate">
+                          {conversation.campaign.title}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          ${conversation.campaign.budget}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <p className="text-sm text-gray-600 truncate mt-1">
+                      {conversation.lastMessage.content}
+                    </p>
+                    
+                    {conversation.unreadCount > 0 && (
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge className="bg-blue-500 text-white text-xs">
+                          {conversation.unreadCount} new
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="applications">
-            Applications
-            {applications.length > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {applications.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="campaigns">
-            Campaigns
-            {campaigns.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {campaigns.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="messages" className="space-y-4">
-          <div className="grid gap-4">
-            {conversations.map((message) => (
-              <Card 
-                key={message.id} 
-                className={`cursor-pointer hover:shadow-md transition-shadow ${
-                  !message.isRead ? 'border-blue-200 bg-blue-50' : ''
-                }`}
-                onClick={() => setSelectedConversation(message.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={message.sender.avatar} />
-                      <AvatarFallback>{message.sender.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-900">{message.sender.name}</h3>
-                        <span className="text-sm text-gray-500">
-                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 truncate">{message.content}</p>
-                      {!message.isRead && (
-                        <Badge variant="default" className="mt-1 text-xs">
-                          New
+      {/* Messages Area */}
+      <div className="flex-1 flex flex-col bg-gray-50">
+        {selectedConversation ? (
+          <>
+            {/* Header */}
+            <div className="p-4 bg-white border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={selectedConversation.participant.avatar} />
+                    <AvatarFallback>
+                      {selectedConversation.participant.name.split(" ").map(n => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-semibold">{selectedConversation.participant.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {selectedConversation.participant.type === "influencer" ? "Creator" : "Brand"}
+                      </Badge>
+                      {selectedConversation.participant.verified && (
+                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                          Verified
                         </Badge>
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-        <TabsContent value="applications" className="space-y-4">
-          {applications.map((application) => (
-            <Card key={application.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={application.influencer.avatar} />
-                      <AvatarFallback>{application.influencer.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{application.influencer.name}</CardTitle>
-                      <p className="text-sm text-gray-600">{application.campaignTitle}</p>
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.map((message) => {
+                  const isOwnMessage = message.senderId === currentUser.id
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className={`max-w-[70%] ${isOwnMessage ? "order-2" : "order-1"}`}>
+                        <div
+                          className={`p-3 rounded-lg ${
+                            isOwnMessage
+                              ? "bg-blue-500 text-white"
+                              : "bg-white border"
+                          }`}
+                        >
+                          <p className="text-sm">{message.content}</p>
+                          <div className={`flex items-center gap-1 mt-2 ${
+                            isOwnMessage ? "text-blue-100" : "text-gray-500"
+                          }`}>
+                            <span className="text-xs">
+                              {formatTimestamp(message.timestamp)}
+                            </span>
+                            {isOwnMessage && (
+                              <CheckCircle className="w-3 h-3" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <Badge 
-                    variant={
-                      application.status === "accepted" ? "default" :
-                      application.status === "rejected" ? "destructive" :
-                      application.status === "negotiating" ? "secondary" : "outline"
+                  )
+                })}
+              </div>
+            </ScrollArea>
+
+            {/* Message Input */}
+            <div className="p-4 bg-white border-t">
+              <div className="flex items-end gap-2">
+                <Textarea
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  className="min-h-[60px] max-h-[120px] resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSendMessage()
                     }
-                  >
-                    {application.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
-                    <span>{application.influencer.followers.toLocaleString()} followers</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gray-500" />
-                    <span>{application.influencer.engagement}% engagement</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-500" />
-                    <span>${application.budget}</span>
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-4">{application.message}</p>
-                <div className="flex gap-2">
-                  {application.status === "pending" && (
-                    <>
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleApplicationAction(application.id, "accept")}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Accept
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleApplicationAction(application.id, "reject")}
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                  <Button size="sm" variant="outline">
-                    <MessageSquare className="w-4 h-4 mr-1" />
-                    Message
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="campaigns" className="space-y-4">
-          {campaigns.map((campaign) => (
-            <Card key={campaign.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={campaign.brand.avatar} />
-                      <AvatarFallback>{campaign.brand.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{campaign.title}</CardTitle>
-                      <p className="text-sm text-gray-600">{campaign.brand.name}</p>
-                    </div>
-                  </div>
-                  <Badge variant={campaign.status === "active" ? "default" : "secondary"}>
-                    {campaign.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-500" />
-                    <span>${campaign.budget.toLocaleString()} budget</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <span>{campaign.timestamp.toLocaleDateString()}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm">
-                    <MessageSquare className="w-4 h-4 mr-1" />
-                    Apply
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
-
-      {/* Message Dialog */}
-      {selectedConversation && (
-        <Dialog open={!!selectedConversation} onOpenChange={() => setSelectedConversation(null)}>
-          <DialogContent className="max-w-2xl h-[600px] flex flex-col">
-            <DialogHeader>
-              <DialogTitle>Chat with SportFit Pro</DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-y-auto space-y-4 p-4 border rounded-lg">
-              {mockMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender.type === userRole ? 'justify-end' : 'justify-start'}`}
+                  }}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim()}
+                  className="px-4"
                 >
-                  <div
-                    className={`max-w-xs p-3 rounded-lg ${
-                      message.sender.type === userRole
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      message.sender.type === userRole ? 'text-blue-100' : 'text-gray-500'
-                    }`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2 p-4 border-t">
-              <Textarea
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                className="flex-1"
-                rows={2}
-              />
-              <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                <Send className="w-4 h-4" />
-              </Button>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">Select a conversation</h3>
+              <p className="text-gray-500">Choose a conversation from the list to start messaging</p>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   )
 } 

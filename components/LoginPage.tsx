@@ -28,6 +28,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setIsLoading(true)
     // Simulate login process
     await new Promise((resolve) => setTimeout(resolve, 1500))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("isAuthenticated", "true")
+      localStorage.setItem("userRole", selectedRole)
+    }
     onLogin(selectedRole)
   }
 
@@ -36,6 +40,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setIsLoading(true)
     // Simulate signup process
     await new Promise((resolve) => setTimeout(resolve, 1500))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("isAuthenticated", "true")
+      localStorage.setItem("userRole", selectedRole)
+    }
     setShowAccountConnection(true)
   }
 
