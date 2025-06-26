@@ -28,6 +28,10 @@ import {
   Twitter,
   CheckCircle,
   X,
+  Filter,
+  Search,
+  Award,
+  Clock,
 } from "lucide-react"
 
 interface Campaign {
@@ -59,6 +63,10 @@ interface InfluencerMatch {
   price: number
   bio: string
   tags: string[]
+  location: string
+  responseTime: string
+  rating: number
+  completedCampaigns: number
 }
 
 export function CampaignCreator() {
@@ -75,6 +83,8 @@ export function CampaignCreator() {
   })
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sortBy, setSortBy] = useState<"matchScore" | "followers" | "engagement" | "price">("matchScore")
 
   const mockInfluencers: InfluencerMatch[] = [
     {
@@ -86,8 +96,12 @@ export function CampaignCreator() {
       platforms: ["Instagram", "TikTok"],
       matchScore: 95,
       price: 2500,
-      bio: "Fitness & lifestyle content creator",
-      tags: ["fitness", "lifestyle", "wellness"],
+      bio: "Fitness & lifestyle content creator helping people achieve their health goals",
+      tags: ["fitness", "lifestyle", "wellness", "nutrition"],
+      location: "Los Angeles, CA",
+      responseTime: "2-4 hours",
+      rating: 4.8,
+      completedCampaigns: 47,
     },
     {
       id: "2",
@@ -98,8 +112,12 @@ export function CampaignCreator() {
       platforms: ["Instagram", "YouTube"],
       matchScore: 88,
       price: 1800,
-      bio: "Fashion and beauty influencer",
-      tags: ["fashion", "beauty", "style"],
+      bio: "Fashion and beauty influencer sharing style tips and product reviews",
+      tags: ["fashion", "beauty", "style", "makeup"],
+      location: "New York, NY",
+      responseTime: "1-3 hours",
+      rating: 4.9,
+      completedCampaigns: 32,
     },
     {
       id: "3",
@@ -110,13 +128,145 @@ export function CampaignCreator() {
       platforms: ["Instagram", "TikTok", "YouTube"],
       matchScore: 82,
       price: 3500,
-      bio: "Sports and fitness enthusiast",
-      tags: ["sports", "fitness", "motivation"],
+      bio: "Sports and fitness enthusiast motivating others through workout content",
+      tags: ["sports", "fitness", "motivation", "training"],
+      location: "Miami, FL",
+      responseTime: "4-6 hours",
+      rating: 4.7,
+      completedCampaigns: 28,
+    },
+    {
+      id: "4",
+      name: "Emma Rodriguez",
+      avatar: "/placeholder-user.jpg",
+      followers: 156000,
+      engagement: 4.7,
+      platforms: ["Instagram", "TikTok"],
+      matchScore: 91,
+      price: 2200,
+      bio: "Travel blogger sharing adventures and destination guides worldwide",
+      tags: ["travel", "adventure", "lifestyle", "photography"],
+      location: "San Francisco, CA",
+      responseTime: "1-2 hours",
+      rating: 4.9,
+      completedCampaigns: 41,
+    },
+    {
+      id: "5",
+      name: "David Park",
+      avatar: "/placeholder-user.jpg",
+      followers: 75000,
+      engagement: 6.2,
+      platforms: ["Instagram", "YouTube"],
+      matchScore: 87,
+      price: 1500,
+      bio: "Tech reviewer and gadget enthusiast sharing the latest in technology",
+      tags: ["tech", "gadgets", "reviews", "innovation"],
+      location: "Seattle, WA",
+      responseTime: "3-5 hours",
+      rating: 4.6,
+      completedCampaigns: 23,
+    },
+    {
+      id: "6",
+      name: "Lisa Thompson",
+      avatar: "/placeholder-user.jpg",
+      followers: 320000,
+      engagement: 3.2,
+      platforms: ["Instagram", "TikTok", "YouTube"],
+      matchScore: 78,
+      price: 4800,
+      bio: "Food blogger and recipe creator inspiring home cooking",
+      tags: ["food", "cooking", "recipes", "lifestyle"],
+      location: "Austin, TX",
+      responseTime: "6-8 hours",
+      rating: 4.5,
+      completedCampaigns: 35,
+    },
+    {
+      id: "7",
+      name: "James Wilson",
+      avatar: "/placeholder-user.jpg",
+      followers: 95000,
+      engagement: 5.8,
+      platforms: ["Instagram", "TikTok"],
+      matchScore: 93,
+      price: 1900,
+      bio: "Sustainable living advocate promoting eco-friendly lifestyle choices",
+      tags: ["sustainability", "eco-friendly", "lifestyle", "green"],
+      location: "Portland, OR",
+      responseTime: "2-3 hours",
+      rating: 4.8,
+      completedCampaigns: 19,
+    },
+    {
+      id: "8",
+      name: "Maria Garcia",
+      avatar: "/placeholder-user.jpg",
+      followers: 180000,
+      engagement: 4.0,
+      platforms: ["Instagram", "YouTube"],
+      matchScore: 85,
+      price: 2800,
+      bio: "Parenting influencer sharing tips for modern families",
+      tags: ["parenting", "family", "lifestyle", "kids"],
+      location: "Chicago, IL",
+      responseTime: "4-6 hours",
+      rating: 4.7,
+      completedCampaigns: 26,
     },
   ]
 
+  const calculateMatchScore = (influencer: InfluencerMatch, campaign: Partial<Campaign>): number => {
+    let score = 0
+    let totalFactors = 0
+
+    // Follower count match (30% weight)
+    if (campaign.minFollowers) {
+      const followerScore = Math.min(100, (influencer.followers / campaign.minFollowers) * 100)
+      score += followerScore * 0.3
+      totalFactors += 0.3
+    }
+
+    // Engagement rate match (25% weight)
+    if (campaign.minEngagement) {
+      const engagementScore = Math.min(100, (influencer.engagement / campaign.minEngagement) * 100)
+      score += engagementScore * 0.25
+      totalFactors += 0.25
+    }
+
+    // Niche match (25% weight)
+    if (campaign.niche && influencer.tags.includes(campaign.niche)) {
+      score += 100 * 0.25
+      totalFactors += 0.25
+    }
+
+    // Budget compatibility (20% weight)
+    if (campaign.budget) {
+      const budgetScore = Math.max(0, 100 - ((influencer.price - campaign.budget) / campaign.budget) * 100)
+      score += Math.max(0, budgetScore) * 0.2
+      totalFactors += 0.2
+    }
+
+    return totalFactors > 0 ? Math.round(score / totalFactors) : 0
+  }
+
   const handleCreateCampaign = () => {
     if (newCampaign.title && newCampaign.description && newCampaign.budget) {
+      // Calculate matches with improved scoring
+      const matches = mockInfluencers
+        .map(influencer => ({
+          ...influencer,
+          matchScore: calculateMatchScore(influencer, newCampaign)
+        }))
+        .filter(influencer => 
+          influencer.followers >= (newCampaign.minFollowers || 0) &&
+          influencer.engagement >= (newCampaign.minEngagement || 0) &&
+          (newCampaign.niche ? influencer.tags.includes(newCampaign.niche) : true) &&
+          influencer.price <= (newCampaign.budget || Infinity)
+        )
+        .sort((a, b) => b.matchScore - a.matchScore)
+
       const campaign: Campaign = {
         id: Date.now().toString(),
         title: newCampaign.title,
@@ -129,11 +279,7 @@ export function CampaignCreator() {
         status: "active",
         createdAt: new Date(),
         applications: 0,
-        matches: mockInfluencers.filter(influencer =>
-          influencer.followers >= (newCampaign.minFollowers || 0) &&
-          influencer.engagement >= (newCampaign.minEngagement || 0) &&
-          (newCampaign.niche ? influencer.tags.includes(newCampaign.niche) : true)
-        ),
+        matches,
         minFollowers: newCampaign.minFollowers,
         minEngagement: newCampaign.minEngagement,
         niche: newCampaign.niche,
@@ -160,6 +306,25 @@ export function CampaignCreator() {
       requirements: newCampaign.requirements?.filter(r => r !== requirement) || [],
     })
   }
+
+  const filteredMatches = selectedCampaign?.matches
+    .filter(influencer => 
+      influencer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      influencer.bio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      influencer.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "followers":
+          return b.followers - a.followers
+        case "engagement":
+          return b.engagement - a.engagement
+        case "price":
+          return a.price - b.price
+        default:
+          return b.matchScore - a.matchScore
+      }
+    }) || []
 
   return (
     <div className="space-y-6">
@@ -219,6 +384,8 @@ export function CampaignCreator() {
                     <SelectItem value="food">Food</SelectItem>
                     <SelectItem value="travel">Travel</SelectItem>
                     <SelectItem value="tech">Technology</SelectItem>
+                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                    <SelectItem value="parenting">Parenting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -289,6 +456,11 @@ export function CampaignCreator() {
                   <SelectItem value="fashion">Fashion</SelectItem>
                   <SelectItem value="lifestyle">Lifestyle</SelectItem>
                   <SelectItem value="sports">Sports</SelectItem>
+                  <SelectItem value="travel">Travel</SelectItem>
+                  <SelectItem value="tech">Tech</SelectItem>
+                  <SelectItem value="food">Food</SelectItem>
+                  <SelectItem value="parenting">Parenting</SelectItem>
+                  <SelectItem value="sustainability">Sustainability</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,7 +531,7 @@ export function CampaignCreator() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-gray-500">Budget:</span>
                   <span className="ml-2 font-semibold">${campaign.budget.toLocaleString()}</span>
@@ -378,13 +550,32 @@ export function CampaignCreator() {
                 </div>
               </div>
               
+              {/* Campaign Requirements Summary */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm mb-2">Campaign Requirements:</h4>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {campaign.minFollowers && (
+                    <Badge variant="outline">Min {campaign.minFollowers.toLocaleString()} followers</Badge>
+                  )}
+                  {campaign.minEngagement && (
+                    <Badge variant="outline">Min {campaign.minEngagement}% engagement</Badge>
+                  )}
+                  {campaign.niche && (
+                    <Badge variant="outline">{campaign.niche} niche</Badge>
+                  )}
+                  {campaign.requirements?.map((req, index) => (
+                    <Badge key={index} variant="outline">{req}</Badge>
+                  ))}
+                </div>
+              </div>
+              
               <div className="mt-4">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedCampaign(campaign)}
                 >
-                  View Matches
+                  View Matches ({campaign.matches.length})
                 </Button>
               </div>
             </CardContent>
@@ -392,56 +583,126 @@ export function CampaignCreator() {
         ))}
       </div>
 
-      {/* Matches Dialog */}
+      {/* Enhanced Matches Dialog */}
       {selectedCampaign && (
         <Dialog open={!!selectedCampaign} onOpenChange={() => setSelectedCampaign(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Matches for "{selectedCampaign.title}"</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-blue-600" />
+                Matches for "{selectedCampaign.title}"
+              </DialogTitle>
+              <p className="text-sm text-gray-600">
+                Found {filteredMatches.length} influencers matching your criteria
+              </p>
             </DialogHeader>
+            
+            {/* Search and Filter Controls */}
+            <div className="flex gap-4 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search influencers by name, bio, or tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="matchScore">Sort by Match Score</SelectItem>
+                  <SelectItem value="followers">Sort by Followers</SelectItem>
+                  <SelectItem value="engagement">Sort by Engagement</SelectItem>
+                  <SelectItem value="price">Sort by Price</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-4">
-              {selectedCampaign.matches.map((influencer) => (
-                <Card key={influencer.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+              {filteredMatches.map((influencer) => (
+                <Card key={influencer.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4 flex-1">
                         <img
                           src={influencer.avatar}
                           alt={influencer.name}
-                          className="w-12 h-12 rounded-full"
+                          className="w-16 h-16 rounded-full object-cover"
                         />
-                        <div>
-                          <h3 className="font-semibold">{influencer.name}</h3>
-                          <p className="text-sm text-gray-600">{influencer.bio}</p>
-                          <div className="flex items-center gap-4 mt-1 text-sm">
-                            <span className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {influencer.followers.toLocaleString()}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <TrendingUp className="w-4 h-4" />
-                              {influencer.engagement}%
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="w-4 h-4" />
-                              ${influencer.price}
-                            </span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-lg">{influencer.name}</h3>
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <Star className="w-3 h-3" />
+                              {influencer.rating}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {influencer.completedCampaigns} campaigns
+                            </Badge>
+                          </div>
+                          
+                          <p className="text-gray-600 mb-3">{influencer.bio}</p>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div className="flex items-center gap-1">
+                              <Users className="w-4 h-4 text-gray-500" />
+                              <span>{influencer.followers.toLocaleString()} followers</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <TrendingUp className="w-4 h-4 text-gray-500" />
+                              <span>{influencer.engagement}% engagement</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="w-4 h-4 text-gray-500" />
+                              <span>${influencer.price}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4 text-gray-500" />
+                              <span>{influencer.responseTime}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-3">
+                            <span className="text-xs text-gray-500">Platforms:</span>
+                            <div className="flex gap-1">
+                              {influencer.platforms.map(platform => (
+                                <Badge key={platform} variant="outline" className="text-xs">
+                                  {platform}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-gray-500">Tags:</span>
+                            <div className="flex gap-1">
+                              {influencer.tags.map(tag => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 mb-2">
-                          <Star className="w-4 h-4 text-yellow-500" />
-                          <span className="font-semibold">{influencer.matchScore}% match</span>
+                      
+                      <div className="text-right ml-4">
+                        <div className="flex items-center gap-1 mb-3">
+                          <Award className="w-4 h-4 text-yellow-500" />
+                          <span className="font-semibold text-lg">{influencer.matchScore}% match</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
+                        
+                        <div className="space-y-2">
+                          <Button size="sm" variant="outline" className="w-full">
                             <MessageSquare className="w-4 h-4 mr-1" />
                             Message
                           </Button>
-                          <Button size="sm">
+                          <Button size="sm" className="w-full">
                             <DollarSign className="w-4 h-4 mr-1" />
-                            Hire
+                            Hire for ${influencer.price}
                           </Button>
                         </div>
                       </div>
@@ -449,49 +710,22 @@ export function CampaignCreator() {
                   </CardContent>
                 </Card>
               ))}
+              
+              {filteredMatches.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No influencers match your current search criteria.</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSearchTerm("")}
+                    className="mt-2"
+                  >
+                    Clear Search
+                  </Button>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
-      )}
-
-      {/* After campaign creation, show influencer selection if there are matches */}
-      {selectedCampaign && selectedCampaign.matches.length > 0 && (
-        <Card className="border-0 shadow-lg mt-6">
-          <CardHeader>
-            <CardTitle>Select Influencers for Your Campaign</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {selectedCampaign.matches.map(influencer => (
-              <div key={influencer.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                <img src={influencer.avatar} alt={influencer.name} className="w-12 h-12 rounded-full object-cover" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{influencer.name}</span>
-                    <Badge variant="secondary">{influencer.matchScore}% match</Badge>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {influencer.followers.toLocaleString()} followers • {influencer.engagement}% engagement • {influencer.tags.join(", ")}
-                  </div>
-                  <div className="text-xs text-gray-500">${influencer.price} per campaign</div>
-                  <div className="text-xs text-gray-700 mt-1">{influencer.bio}</div>
-                </div>
-                <Checkbox
-                  checked={selectedInfluencers.includes(influencer.id)}
-                  onCheckedChange={checked => {
-                    if (checked) {
-                      setSelectedInfluencers([...selectedInfluencers, influencer.id])
-                    } else {
-                      setSelectedInfluencers(selectedInfluencers.filter(id => id !== influencer.id))
-                    }
-                  }}
-                />
-              </div>
-            ))}
-            <Button className="mt-2" onClick={() => setSelectedCampaign(null)}>
-              Confirm Selection
-            </Button>
-          </CardContent>
-        </Card>
       )}
     </div>
   )
