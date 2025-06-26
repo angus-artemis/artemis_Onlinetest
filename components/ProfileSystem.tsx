@@ -26,10 +26,8 @@ import {
   Award,
   CheckCircle,
   Instagram,
-  Youtube,
   Twitter,
   Facebook,
-  TikTok,
   Link,
   Plus,
   X,
@@ -122,7 +120,7 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
     website: userRole === "creator" ? "https://alexfitness.com" : "https://sportfitpro.com",
     email: userRole === "creator" ? "alex@alexfitness.com" : "contact@sportfitpro.com",
     phone: userRole === "creator" ? "+1 (555) 123-4567" : "+1 (555) 987-6543",
-    type: userRole,
+    type: userRole === "creator" ? "influencer" : "brand",
     verified: true,
     featured: true,
     followers: userRole === "creator" ? 125000 : 85000,
@@ -143,16 +141,16 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
         verified: true,
       },
       {
-        name: "TikTok",
-        username: userRole === "creator" ? "@alexfitness" : "@sportfitpro",
-        followers: userRole === "creator" ? 89000 : 65000,
-        verified: true,
-      },
-      {
-        name: "YouTube",
+        name: "Facebook",
         username: userRole === "creator" ? "Alex Fitness" : "SportFit Pro",
         followers: userRole === "creator" ? 45000 : 32000,
         verified: true,
+      },
+      {
+        name: "Twitter",
+        username: userRole === "creator" ? "@alexfitness" : "@sportfitpro",
+        followers: userRole === "creator" ? 28000 : 18000,
+        verified: false,
       },
     ],
     portfolio: [
@@ -175,7 +173,7 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
         views: 72000,
         likes: 4800,
         engagement: 4.2,
-        platform: "TikTok",
+        platform: "Instagram",
         postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
       },
       {
@@ -186,7 +184,7 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
         views: 65000,
         likes: 4500,
         engagement: 3.9,
-        platform: "YouTube",
+        platform: "Instagram",
         postedAt: new Date(Date.now() - 1000 * 60 * 60 * 48),
       },
     ],
@@ -252,10 +250,6 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
     switch (platform.toLowerCase()) {
       case "instagram":
         return <Instagram className="w-4 h-4" />
-      case "youtube":
-        return <Youtube className="w-4 h-4" />
-      case "tiktok":
-        return <TikTok className="w-4 h-4" />
       case "twitter":
         return <Twitter className="w-4 h-4" />
       case "facebook":

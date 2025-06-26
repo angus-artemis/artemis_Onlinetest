@@ -127,8 +127,42 @@ export default function InfluencerDashboard() {
     return <LoginPage onLogin={handleLogin} />
   }
 
+  // Make Instagram connection optional - users can skip it
   if (!accountsConnected) {
-    return <AccountConnection onComplete={handleAccountsConnected} />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-0 shadow-xl">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Instagram className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-xl">Connect Your Instagram</CardTitle>
+            <p className="text-gray-600">
+              Connect your Instagram account to access advanced features and analytics
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={handleAccountsConnected}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+            >
+              <Instagram className="w-4 h-4 mr-2" />
+              Connect Instagram
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleAccountsConnected}
+              className="w-full"
+            >
+              Skip for Now - Use Demo Data
+            </Button>
+            <p className="text-xs text-gray-500 text-center">
+              You can always connect Instagram later in settings
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (isLoading) {

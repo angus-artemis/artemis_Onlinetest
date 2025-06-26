@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import {
   MessageSquare,
   Send,
@@ -22,6 +24,10 @@ import {
   Calendar,
   User,
   Briefcase,
+  Check,
+  X,
+  Edit,
+  AlertCircle,
 } from "lucide-react"
 
 interface Message {
@@ -31,9 +37,15 @@ interface Message {
   content: string
   timestamp: Date
   read: boolean
-  type: "text" | "campaign" | "proposal" | "payment"
+  type: "text" | "campaign" | "proposal" | "payment" | "deal" | "negotiate" | "decline"
   campaignId?: string
   attachments?: string[]
+  dealDetails?: {
+    price: number
+    deliverables: string[]
+    timeline: string
+    status: "pending" | "accepted" | "negotiating" | "declined"
+  }
 }
 
 interface Conversation {
@@ -53,6 +65,7 @@ interface Conversation {
     budget: number
     status: "active" | "completed" | "cancelled"
   }
+  dealStatus?: "pending" | "accepted" | "negotiating" | "declined"
 }
 
 interface User {
@@ -76,6 +89,12 @@ export function Inbox() {
     type: "brand",
     verified: true,
   })
+  const [showDealDialog, setShowDealDialog] = useState(false)
+  const [dealDetails, setDealDetails] = useState({
+    price: 2500,
+    deliverables: ["3 Instagram posts", "2 Instagram stories", "1 TikTok video"],
+    timeline: "2 weeks",
+  })
 
   // Mock data
   const mockConversations: Conversation[] = [
@@ -93,7 +112,7 @@ export function Inbox() {
         senderId: "influencer-1",
         receiverId: "current-user",
         content: "Hi! I'm interested in your fitness campaign. I have 125K followers and 4.2% engagement rate.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+        timestamp: new Date(Date.now() - 1000 * 60 * 30),
         read: false,
         type: "text",
       },
@@ -104,6 +123,7 @@ export function Inbox() {
         budget: 2500,
         status: "active",
       },
+      dealStatus: "pending",
     },
     {
       id: "2",
@@ -119,7 +139,7 @@ export function Inbox() {
         senderId: "current-user",
         receiverId: "influencer-2",
         content: "Perfect! Let's discuss the campaign details and timeline.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
         read: true,
         type: "text",
       },
@@ -130,6 +150,7 @@ export function Inbox() {
         budget: 2500,
         status: "active",
       },
+      dealStatus: "negotiating",
     },
     {
       id: "3",
@@ -145,11 +166,12 @@ export function Inbox() {
         senderId: "brand-1",
         receiverId: "current-user",
         content: "We loved your recent fitness content! Would you be interested in a collaboration?",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
         read: true,
         type: "campaign",
       },
       unreadCount: 0,
+      dealStatus: "pending",
     },
   ]
 
@@ -189,6 +211,21 @@ export function Inbox() {
       timestamp: new Date(Date.now() - 1000 * 60 * 15),
       read: true,
       type: "text",
+    },
+    {
+      id: "msg-5",
+      senderId: "influencer-1",
+      receiverId: "current-user",
+      content: "That sounds great! I'd love to work with you. Here's my proposal: $2,500 for 3 Instagram posts, 2 Instagram stories, and 1 TikTok video over 2 weeks. What do you think?",
+      timestamp: new Date(Date.now() - 1000 * 60 * 10),
+      read: true,
+      type: "proposal",
+      dealDetails: {
+        price: 2500,
+        deliverables: ["3 Instagram posts", "2 Instagram stories", "1 TikTok video"],
+        timeline: "2 weeks",
+        status: "pending",
+      },
     },
   ]
 
@@ -231,6 +268,54 @@ export function Inbox() {
     ))
   }
 
+  const handleDealAction = (action: "deal" | "negotiate" | "decline") => {
+    if (!selectedConversation) return
+
+    const message: Message = {
+      id: `msg-${Date.now()}`,
+      senderId: currentUser.id,
+      receiverId: selectedConversation.participant.id,
+      content: action === "deal" ? "Deal accepted! Let's get started." : 
+               action === "negotiate" ? "Let's negotiate the terms." : 
+               "Thanks for your interest, but we'll pass on this opportunity.",
+      timestamp: new Date(),
+      read: false,
+      type: action,
+      dealDetails: action === "deal" ? {
+        ...dealDetails,
+        status: "accepted",
+      } : action === "negotiate" ? {
+        ...dealDetails,
+        status: "negotiating",
+      } : {
+        ...dealDetails,
+        status: "declined",
+      },
+    }
+
+    setMessages([...messages, message])
+    
+    // Update conversation status
+    setConversations(conversations.map(conv =>
+      conv.id === selectedConversation.id
+        ? { 
+            ...conv, 
+            lastMessage: message, 
+            unreadCount: 0,
+            dealStatus: action === "deal" ? "accepted" : 
+                       action === "negotiate" ? "negotiating" : "declined"
+          }
+        : conv
+    ))
+
+    if (action === "deal") {
+      // Add to campaigns for both parties
+      console.log("Deal accepted - adding to campaigns")
+    }
+
+    setShowDealDialog(false)
+  }
+
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date()
     const diff = now.getTime() - timestamp.getTime()
@@ -243,10 +328,23 @@ export function Inbox() {
     return `${days}d ago`
   }
 
+  const getDealStatusColor = (status?: string) => {
+    switch (status) {
+      case "accepted":
+        return "bg-green-100 text-green-700"
+      case "negotiating":
+        return "bg-yellow-100 text-yellow-700"
+      case "declined":
+        return "bg-red-100 text-red-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
+  }
+
   return (
-    <div className="h-full flex">
+    <div className="h-screen flex">
       {/* Conversations List */}
-      <div className="w-1/3 border-r bg-white">
+      <div className="w-1/3 border-r bg-white flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Messages</h2>
@@ -265,7 +363,7 @@ export function Inbox() {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className="flex-1">
           <div className="space-y-1">
             {filteredConversations.map((conversation) => (
               <div
@@ -321,13 +419,18 @@ export function Inbox() {
                       {conversation.lastMessage.content}
                     </p>
                     
-                    {conversation.unreadCount > 0 && (
-                      <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-2">
+                      {conversation.unreadCount > 0 && (
                         <Badge className="bg-blue-500 text-white text-xs">
                           {conversation.unreadCount} new
                         </Badge>
-                      </div>
-                    )}
+                      )}
+                      {conversation.dealStatus && (
+                        <Badge className={`text-xs ${getDealStatusColor(conversation.dealStatus)}`}>
+                          {conversation.dealStatus}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -361,6 +464,11 @@ export function Inbox() {
                           Verified
                         </Badge>
                       )}
+                      {selectedConversation.dealStatus && (
+                        <Badge className={`text-xs ${getDealStatusColor(selectedConversation.dealStatus)}`}>
+                          {selectedConversation.dealStatus}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -391,6 +499,38 @@ export function Inbox() {
                           }`}
                         >
                           <p className="text-sm">{message.content}</p>
+                          {message.dealDetails && (
+                            <div className={`mt-3 p-3 rounded-lg ${
+                              isOwnMessage ? "bg-blue-600" : "bg-gray-50"
+                            }`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`text-sm font-medium ${
+                                  isOwnMessage ? "text-blue-100" : "text-gray-700"
+                                }`}>
+                                  Deal Proposal
+                                </span>
+                                <span className={`text-sm ${
+                                  isOwnMessage ? "text-blue-100" : "text-gray-600"
+                                }`}>
+                                  ${message.dealDetails.price}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {message.dealDetails.deliverables.map((deliverable, index) => (
+                                  <div key={index} className={`text-xs ${
+                                    isOwnMessage ? "text-blue-100" : "text-gray-600"
+                                  }`}>
+                                    • {deliverable}
+                                  </div>
+                                ))}
+                              </div>
+                              <div className={`text-xs mt-2 ${
+                                isOwnMessage ? "text-blue-100" : "text-gray-500"
+                              }`}>
+                                Timeline: {message.dealDetails.timeline}
+                              </div>
+                            </div>
+                          )}
                           <div className={`flex items-center gap-1 mt-2 ${
                             isOwnMessage ? "text-blue-100" : "text-gray-500"
                           }`}>
@@ -408,6 +548,37 @@ export function Inbox() {
                 })}
               </div>
             </ScrollArea>
+
+            {/* Deal Action Buttons */}
+            {selectedConversation.dealStatus === "pending" && (
+              <div className="p-4 bg-white border-t">
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleDealAction("deal")}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="w-4 h-4 mr-2" />
+                    Accept Deal
+                  </Button>
+                  <Button 
+                    onClick={() => setShowDealDialog(true)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Negotiate
+                  </Button>
+                  <Button 
+                    onClick={() => handleDealAction("decline")}
+                    variant="outline"
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Message Input */}
             <div className="p-4 bg-white border-t">
@@ -444,6 +615,63 @@ export function Inbox() {
           </div>
         )}
       </div>
+
+      {/* Negotiate Deal Dialog */}
+      <Dialog open={showDealDialog} onOpenChange={setShowDealDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Negotiate Deal Terms</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Price ($)</Label>
+              <Input
+                type="number"
+                value={dealDetails.price}
+                onChange={(e) => setDealDetails({
+                  ...dealDetails,
+                  price: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Timeline</Label>
+              <Input
+                value={dealDetails.timeline}
+                onChange={(e) => setDealDetails({
+                  ...dealDetails,
+                  timeline: e.target.value
+                })}
+              />
+            </div>
+            <div>
+              <Label>Deliverables</Label>
+              <Textarea
+                value={dealDetails.deliverables.join('\n')}
+                onChange={(e) => setDealDetails({
+                  ...dealDetails,
+                  deliverables: e.target.value.split('\n').filter(d => d.trim())
+                })}
+                placeholder="Enter deliverables, one per line"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => handleDealAction("negotiate")}
+                className="flex-1"
+              >
+                Send Counter-Offer
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setShowDealDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

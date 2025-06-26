@@ -4,522 +4,390 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import {
   TrendingUp,
   TrendingDown,
   Users,
-  Heart,
-  MessageSquare,
+  DollarSign,
   Eye,
+  Heart,
+  MessageCircle,
   Share2,
   Calendar,
   Target,
-  Award,
   BarChart3,
   PieChart,
   Activity,
-  Clock,
-  MapPin,
-  Globe,
-  Smartphone,
-  Monitor,
+  ArrowUpRight,
+  ArrowDownRight,
+  Instagram,
+  Facebook,
+  Twitter,
+  Youtube,
+  Filter,
+  Download,
+  RefreshCw,
 } from "lucide-react"
-import { InteractiveChart } from "../InteractiveChart"
-import { AnimatedCounter } from "../AnimatedCounter"
 
 interface AnalyticsData {
   followers: number
-  following: number
-  totalPosts: number
-  totalLikes: number
-  totalComments: number
-  totalViews: number
-  totalShares: number
-  engagementRate: number
-  growthRate: number
-  reachRate: number
+  engagement: number
+  reach: number
   impressions: number
-  profileViews: number
-  websiteClicks: number
-  emailClicks: number
-  phoneClicks: number
-  textClicks: number
-}
-
-interface AudienceData {
-  ageGroups: { [key: string]: number }
-  gender: { [key: string]: number }
-  topCountries: { country: string; percentage: number }[]
-  topCities: { city: string; percentage: number }[]
-  deviceTypes: { [key: string]: number }
-  activeHours: { [key: string]: number }
-}
-
-interface ContentPerformance {
-  id: string
-  title: string
-  type: "image" | "video" | "carousel" | "story"
-  postedAt: Date
   likes: number
   comments: number
   shares: number
-  views: number
+  revenue: number
+  growth: number
+}
+
+interface CampaignPerformance {
+  id: string
+  name: string
+  platform: string
   reach: number
-  impressions: number
   engagement: number
-  hashtags: string[]
-  caption: string
-  thumbnail: string
+  clicks: number
+  conversions: number
+  revenue: number
+  status: "active" | "completed" | "paused"
 }
 
 export function AdvancedAnalytics() {
-  const [timeframe, setTimeframe] = useState<"7d" | "30d" | "90d" | "1y">("30d")
-  const [activeTab, setActiveTab] = useState("overview")
+  const [timeRange, setTimeRange] = useState("30d")
+  const [selectedPlatform, setSelectedPlatform] = useState("all")
 
   const analyticsData: AnalyticsData = {
     followers: 125000,
-    following: 850,
-    totalPosts: 342,
-    totalLikes: 2850000,
-    totalComments: 125000,
-    totalViews: 8500000,
-    totalShares: 45000,
-    engagementRate: 4.2,
-    growthRate: 12.5,
-    reachRate: 8.7,
-    impressions: 12500000,
-    profileViews: 45000,
-    websiteClicks: 1250,
-    emailClicks: 450,
-    phoneClicks: 320,
-    textClicks: 180,
+    engagement: 4.2,
+    reach: 850000,
+    impressions: 1200000,
+    likes: 45000,
+    comments: 3200,
+    shares: 1800,
+    revenue: 8500,
+    growth: 12.5,
   }
 
-  const audienceData: AudienceData = {
-    ageGroups: {
-      "13-17": 8,
-      "18-24": 35,
-      "25-34": 45,
-      "35-44": 10,
-      "45-54": 2,
-    },
-    gender: {
-      "Female": 65,
-      "Male": 35,
-    },
-    topCountries: [
-      { country: "United States", percentage: 45 },
-      { country: "Canada", percentage: 15 },
-      { country: "Australia", percentage: 12 },
-      { country: "United Kingdom", percentage: 10 },
-      { country: "Germany", percentage: 8 },
-    ],
-    topCities: [
-      { city: "Los Angeles", percentage: 12 },
-      { city: "New York", percentage: 10 },
-      { city: "Toronto", percentage: 8 },
-      { city: "Sydney", percentage: 7 },
-      { city: "London", percentage: 6 },
-    ],
-    deviceTypes: {
-      "Mobile": 78,
-      "Desktop": 18,
-      "Tablet": 4,
-    },
-    activeHours: {
-      "6-9 AM": 15,
-      "9-12 PM": 25,
-      "12-3 PM": 20,
-      "3-6 PM": 18,
-      "6-9 PM": 12,
-      "9-12 AM": 10,
-    },
-  }
-
-  const contentPerformance: ContentPerformance[] = [
+  const campaignPerformance: CampaignPerformance[] = [
     {
       id: "1",
-      title: "Morning Workout Routine",
-      type: "video",
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      likes: 5200,
-      comments: 450,
-      shares: 180,
-      views: 85000,
-      reach: 125000,
-      impressions: 150000,
+      name: "Summer Fitness Challenge",
+      platform: "Instagram",
+      reach: 450000,
       engagement: 4.8,
-      hashtags: ["#fitness", "#workout", "#morningroutine"],
-      caption: "Start your day with this energizing workout! 💪",
-      thumbnail: "/placeholder.jpg",
+      clicks: 12500,
+      conversions: 850,
+      revenue: 3200,
+      status: "active",
     },
     {
       id: "2",
-      title: "Healthy Meal Prep Ideas",
-      type: "carousel",
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-      likes: 4800,
-      comments: 320,
-      shares: 150,
-      views: 72000,
-      reach: 110000,
-      impressions: 135000,
-      engagement: 4.2,
-      hashtags: ["#mealprep", "#healthy", "#nutrition"],
-      caption: "Easy meal prep ideas for the week ahead! 🥗",
-      thumbnail: "/placeholder.jpg",
+      name: "Healthy Living Tips",
+      platform: "Instagram",
+      reach: 320000,
+      engagement: 3.9,
+      clicks: 8900,
+      conversions: 620,
+      revenue: 2400,
+      status: "completed",
     },
     {
       id: "3",
-      title: "Gym Motivation",
-      type: "image",
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 48),
-      likes: 4500,
-      comments: 280,
-      shares: 120,
-      views: 65000,
-      reach: 95000,
-      impressions: 115000,
-      engagement: 3.9,
-      hashtags: ["#motivation", "#gym", "#fitness"],
-      caption: "Push through the pain, embrace the gain! 🔥",
-      thumbnail: "/placeholder.jpg",
+      name: "Workout Motivation",
+      platform: "Instagram",
+      reach: 280000,
+      engagement: 4.1,
+      clicks: 7600,
+      conversions: 520,
+      revenue: 1900,
+      status: "active",
     },
   ]
 
-  const chartData = [
-    { date: "2024-01-01", followers: 115000, engagement: 3.8, reach: 85000, impressions: 100000 },
-    { date: "2024-01-08", followers: 117000, engagement: 4.1, reach: 92000, impressions: 110000 },
-    { date: "2024-01-15", followers: 119000, engagement: 4.3, reach: 98000, impressions: 120000 },
-    { date: "2024-01-22", followers: 121000, engagement: 4.0, reach: 105000, impressions: 125000 },
-    { date: "2024-01-29", followers: 123000, engagement: 4.2, reach: 112000, impressions: 130000 },
-    { date: "2024-02-05", followers: 125000, engagement: 4.2, reach: 118000, impressions: 135000 },
+  const platformData = [
+    { name: "Instagram", followers: 85000, engagement: 4.5, growth: 15.2 },
+    { name: "Facebook", followers: 25000, engagement: 3.2, growth: 8.7 },
+    { name: "Twitter", followers: 15000, engagement: 2.8, growth: 5.4 },
   ]
 
-  const getGrowthIcon = (rate: number) => {
-    return rate > 0 ? (
-      <TrendingUp className="w-4 h-4 text-green-500" />
-    ) : (
-      <TrendingDown className="w-4 h-4 text-red-500" />
-    )
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    return num.toString()
   }
 
-  const getGrowthColor = (rate: number) => {
-    return rate > 0 ? "text-green-600" : "text-red-600"
+  const getGrowthColor = (growth: number) => {
+    return growth >= 0 ? "text-green-600" : "text-red-600"
+  }
+
+  const getGrowthIcon = (growth: number) => {
+    return growth >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
-          <p className="text-gray-600">Track your growth and performance metrics</p>
+          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <p className="text-gray-600 mt-1">Track your performance and growth metrics</p>
         </div>
-        <Select value={timeframe} onValueChange={(value: any) => setTimeframe(value)}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
-            <SelectItem value="1y">Last year</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-3">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+              <SelectItem value="1y">Last year</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Followers</p>
+                <p className="text-2xl font-bold">{formatNumber(analyticsData.followers)}</p>
+                <div className="flex items-center mt-2">
+                  <span className={`text-sm font-medium ${getGrowthColor(analyticsData.growth)}`}>
+                    +{analyticsData.growth}%
+                  </span>
+                  <span className="ml-1">{getGrowthIcon(analyticsData.growth)}</span>
+                </div>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Engagement Rate</p>
+                <p className="text-2xl font-bold">{analyticsData.engagement}%</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm font-medium text-green-600">+0.3%</span>
+                  <ArrowUpRight className="w-4 h-4 ml-1 text-green-600" />
+                </div>
+              </div>
+              <div className="p-3 bg-green-100 rounded-lg">
+                <Heart className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Reach</p>
+                <p className="text-2xl font-bold">{formatNumber(analyticsData.reach)}</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm font-medium text-green-600">+8.2%</span>
+                  <ArrowUpRight className="w-4 h-4 ml-1 text-green-600" />
+                </div>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Eye className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
+                <p className="text-2xl font-bold">${formatNumber(analyticsData.revenue)}</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm font-medium text-green-600">+15.4%</span>
+                  <ArrowUpRight className="w-4 h-4 ml-1 text-green-600" />
+                </div>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <DollarSign className="w-6 h-6 text-yellow-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Analytics */}
+      <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+          <TabsTrigger value="platforms">Platforms</TabsTrigger>
           <TabsTrigger value="audience">Audience</TabsTrigger>
-          <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="growth">Growth</TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Followers</p>
-                    <p className="text-2xl font-bold">
-                      <AnimatedCounter end={analyticsData.followers} />
-                    </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getGrowthIcon(analyticsData.growthRate)}
-                      <span className={`text-sm font-medium ${getGrowthColor(analyticsData.growthRate)}`}>
-                        +{analyticsData.growthRate}%
-                      </span>
-                    </div>
-                  </div>
-                  <Users className="w-8 h-8 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Engagement Rate</p>
-                    <p className="text-2xl font-bold">{analyticsData.engagementRate}%</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getGrowthIcon(0.5)}
-                      <span className="text-sm font-medium text-green-600">+0.5%</span>
-                    </div>
-                  </div>
-                  <Heart className="w-8 h-8 text-red-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Reach</p>
-                    <p className="text-2xl font-bold">
-                      {(analyticsData.impressions / 1000).toFixed(1)}K
-                    </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getGrowthIcon(analyticsData.reachRate)}
-                      <span className={`text-sm font-medium ${getGrowthColor(analyticsData.reachRate)}`}>
-                        +{analyticsData.reachRate}%
-                      </span>
-                    </div>
-                  </div>
-                  <Eye className="w-8 h-8 text-purple-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Profile Views</p>
-                    <p className="text-2xl font-bold">
-                      {(analyticsData.profileViews / 1000).toFixed(1)}K
-                    </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getGrowthIcon(8.2)}
-                      <span className="text-sm font-medium text-green-600">+8.2%</span>
-                    </div>
-                  </div>
-                  <Target className="w-8 h-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Charts */}
+        <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Engagement Breakdown */}
             <Card>
               <CardHeader>
-                <CardTitle>Follower Growth</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Engagement Breakdown
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <InteractiveChart 
-                  data={chartData} 
-                  dataKey="followers" 
-                  color="#3B82F6" 
-                  title="Followers"
-                />
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Likes</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{formatNumber(analyticsData.likes)}</span>
+                      <Progress value={75} className="w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm">Comments</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{formatNumber(analyticsData.comments)}</span>
+                      <Progress value={45} className="w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Share2 className="w-4 h-4 text-green-500" />
+                      <span className="text-sm">Shares</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{formatNumber(analyticsData.shares)}</span>
+                      <Progress value={30} className="w-20" />
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Growth Trends */}
             <Card>
               <CardHeader>
-                <CardTitle>Engagement Trends</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Growth Trends
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <InteractiveChart 
-                  data={chartData} 
-                  dataKey="engagement" 
-                  color="#10B981" 
-                  title="Engagement Rate (%)"
-                />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium">Follower Growth</span>
+                    <span className="text-sm text-green-600 font-medium">+{analyticsData.growth}%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium">Engagement Growth</span>
+                    <span className="text-sm text-green-600 font-medium">+0.3%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium">Reach Growth</span>
+                    <span className="text-sm text-green-600 font-medium">+8.2%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium">Revenue Growth</span>
+                    <span className="text-sm text-green-600 font-medium">+15.4%</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
 
-          {/* Quick Actions */}
+        <TabsContent value="campaigns" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle>Campaign Performance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <BarChart3 className="w-6 h-6" />
-                  <span className="text-sm">Export Data</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <Calendar className="w-6 h-6" />
-                  <span className="text-sm">Schedule Post</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <Target className="w-6 h-6" />
-                  <span className="text-sm">Set Goals</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2">
-                  <Award className="w-6 h-6" />
-                  <span className="text-sm">View Achievements</span>
-                </Button>
+              <div className="space-y-4">
+                {campaignPerformance.map((campaign) => (
+                  <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Instagram className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{campaign.name}</h3>
+                        <p className="text-sm text-gray-600">{campaign.platform}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Reach</p>
+                        <p className="font-medium">{formatNumber(campaign.reach)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Engagement</p>
+                        <p className="font-medium">{campaign.engagement}%</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Revenue</p>
+                        <p className="font-medium">${formatNumber(campaign.revenue)}</p>
+                      </div>
+                      <Badge variant={campaign.status === "active" ? "default" : "secondary"}>
+                        {campaign.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Audience Tab */}
-        <TabsContent value="audience" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Demographics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Age Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Object.entries(audienceData.ageGroups).map(([age, percentage]) => (
-                    <div key={age} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{age}</span>
-                        <span className="text-sm text-gray-600">{percentage}%</span>
-                      </div>
-                      <Progress value={percentage} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Gender Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Object.entries(audienceData.gender).map(([gender, percentage]) => (
-                    <div key={gender} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{gender}</span>
-                        <span className="text-sm text-gray-600">{percentage}%</span>
-                      </div>
-                      <Progress value={percentage} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Top Countries */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Countries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {audienceData.topCountries.map((country, index) => (
-                    <div key={country.country} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
-                        <Globe className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm font-medium">{country.country}</span>
-                      </div>
-                      <span className="text-sm text-gray-600">{country.percentage}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Device Types */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Device Types</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Object.entries(audienceData.deviceTypes).map(([device, percentage]) => (
-                    <div key={device} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {device === "Mobile" ? (
-                          <Smartphone className="w-4 h-4 text-gray-400" />
-                        ) : device === "Desktop" ? (
-                          <Monitor className="w-4 h-4 text-gray-400" />
-                        ) : (
-                          <Smartphone className="w-4 h-4 text-gray-400" />
-                        )}
-                        <span className="text-sm font-medium">{device}</span>
-                      </div>
-                      <span className="text-sm text-gray-600">{percentage}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Content Tab */}
-        <TabsContent value="content" className="space-y-6">
-          <div className="space-y-4">
-            {contentPerformance.map((content) => (
-              <Card key={content.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={content.thumbnail}
-                      alt={content.title}
-                      className="w-20 h-20 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold">{content.title}</h3>
-                        <Badge variant="outline" className="text-xs">
-                          {content.type}
-                        </Badge>
-                        <span className="text-xs text-gray-500">
-                          {content.postedAt.toLocaleDateString()}
-                        </span>
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 mb-3">{content.caption}</p>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Heart className="w-4 h-4 text-red-500" />
-                          <span>{content.likes.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MessageSquare className="w-4 h-4 text-blue-500" />
-                          <span>{content.comments.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Share2 className="w-4 h-4 text-green-500" />
-                          <span>{content.shares.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Eye className="w-4 h-4 text-purple-500" />
-                          <span>{content.views.toLocaleString()}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-3">
-                        <span className="text-sm text-gray-500">Engagement:</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {content.engagement}%
-                        </Badge>
-                      </div>
-                    </div>
+        <TabsContent value="platforms" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {platformData.map((platform) => (
+              <Card key={platform.name}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {platform.name === "Instagram" && <Instagram className="w-5 h-5 text-pink-600" />}
+                    {platform.name === "Facebook" && <Facebook className="w-5 h-5 text-blue-600" />}
+                    {platform.name === "Twitter" && <Twitter className="w-5 h-5 text-blue-400" />}
+                    {platform.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Followers</span>
+                    <span className="font-medium">{formatNumber(platform.followers)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Engagement</span>
+                    <span className="font-medium">{platform.engagement}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Growth</span>
+                    <span className="font-medium text-green-600">+{platform.growth}%</span>
                   </div>
                 </CardContent>
               </Card>
@@ -527,35 +395,41 @@ export function AdvancedAnalytics() {
           </div>
         </TabsContent>
 
-        {/* Growth Tab */}
-        <TabsContent value="growth" className="space-y-6">
+        <TabsContent value="audience" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Growth Goals</CardTitle>
+                <CardTitle>Demographics</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Followers Goal</span>
-                      <span className="text-sm text-gray-600">150K / 200K</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Age 18-24</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={25} className="w-20" />
+                      <span className="text-sm font-medium">25%</span>
                     </div>
-                    <Progress value={75} className="h-2" />
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Engagement Goal</span>
-                      <span className="text-sm text-gray-600">4.2% / 5%</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Age 25-34</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={45} className="w-20" />
+                      <span className="text-sm font-medium">45%</span>
                     </div>
-                    <Progress value={84} className="h-2" />
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Posts Goal</span>
-                      <span className="text-sm text-gray-600">342 / 365</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Age 35-44</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={20} className="w-20" />
+                      <span className="text-sm font-medium">20%</span>
                     </div>
-                    <Progress value={94} className="h-2" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Age 45+</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={10} className="w-20" />
+                      <span className="text-sm font-medium">10%</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -563,22 +437,30 @@ export function AdvancedAnalytics() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Best Performing Times</CardTitle>
+                <CardTitle>Top Locations</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries(audienceData.activeHours)
-                    .sort(([,a], [,b]) => b - a)
-                    .slice(0, 5)
-                    .map(([time, percentage]) => (
-                      <div key={time} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium">{time}</span>
-                        </div>
-                        <span className="text-sm text-gray-600">{percentage}%</span>
-                      </div>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">United States</span>
+                    <span className="text-sm font-medium">35%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">United Kingdom</span>
+                    <span className="text-sm font-medium">18%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Canada</span>
+                    <span className="text-sm font-medium">12%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Australia</span>
+                    <span className="text-sm font-medium">10%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Other</span>
+                    <span className="text-sm font-medium">25%</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

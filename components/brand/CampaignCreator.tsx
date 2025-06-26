@@ -6,727 +6,642 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Plus,
+  Search,
+  Filter,
   Target,
   Users,
   DollarSign,
   Calendar,
   MapPin,
-  Hash,
-  Eye,
-  MessageSquare,
   Star,
-  TrendingUp,
-  Instagram,
-  Youtube,
-  Twitter,
   CheckCircle,
-  X,
-  Filter,
-  Search,
-  Award,
   Clock,
+  TrendingUp,
+  Eye,
+  Edit,
+  Trash2,
+  Send,
+  Award,
+  Briefcase,
+  Instagram,
+  Facebook,
+  Twitter,
+  ArrowRight,
+  Check,
+  X,
+  AlertCircle,
 } from "lucide-react"
 
 interface Campaign {
   id: string
   title: string
   description: string
-  budget: number
-  requirements: string[]
-  category: string
-  location: string
-  duration: string
-  status: "draft" | "active" | "completed"
-  createdAt: Date
+  brand: {
+    name: string
+    avatar: string
+    verified: boolean
+  }
+  requirements: {
+    followers: number
+    engagement: number
+    niche: string[]
+    location?: string
+  }
+  budget: {
+    min: number
+    max: number
+    currency: string
+  }
+  deliverables: string[]
+  timeline: string
+  status: "active" | "completed" | "paused" | "draft"
   applications: number
-  matches: InfluencerMatch[]
-  minFollowers?: number
-  minEngagement?: number
-  niche?: string
+  createdAt: Date
+  deadline: Date
 }
 
-interface InfluencerMatch {
+interface AcceptedDeal {
   id: string
-  name: string
-  avatar: string
-  followers: number
-  engagement: number
-  platforms: string[]
-  matchScore: number
-  price: number
-  bio: string
-  tags: string[]
-  location: string
-  responseTime: string
-  rating: number
-  completedCampaigns: number
+  campaignId: string
+  campaignTitle: string
+  influencer: {
+    name: string
+    avatar: string
+    followers: number
+  }
+  dealDetails: {
+    price: number
+    deliverables: string[]
+    timeline: string
+  }
+  status: "active" | "completed" | "cancelled"
+  startDate: Date
+  endDate: Date
+  progress: number
 }
 
 export function CampaignCreator() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [activeTab, setActiveTab] = useState("create")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [newCampaign, setNewCampaign] = useState<Partial<Campaign>>({
-    status: "draft",
-    requirements: [],
-    applications: 0,
-    matches: [],
-    minFollowers: 0,
-    minEngagement: 0,
-    niche: "",
-  })
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
-  const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState<"matchScore" | "followers" | "engagement" | "price">("matchScore")
+  const [selectedNiche, setSelectedNiche] = useState("all")
+  const [userRole] = useState<"brand" | "creator">("brand")
 
-  const mockInfluencers: InfluencerMatch[] = [
+  // Mock campaigns data
+  const campaigns: Campaign[] = [
     {
       id: "1",
-      name: "Alex Chen",
-      avatar: "/placeholder-user.jpg",
-      followers: 125000,
-      engagement: 4.2,
-      platforms: ["Instagram", "TikTok"],
-      matchScore: 95,
-      price: 2500,
-      bio: "Fitness & lifestyle content creator helping people achieve their health goals",
-      tags: ["fitness", "lifestyle", "wellness", "nutrition"],
-      location: "Los Angeles, CA",
-      responseTime: "2-4 hours",
-      rating: 4.8,
-      completedCampaigns: 47,
+      title: "Summer Fitness Challenge",
+      description: "Promote our new fitness app with engaging workout content and transformation stories.",
+      brand: {
+        name: "SportFit Pro",
+        avatar: "/placeholder-logo.png",
+        verified: true,
+      },
+      requirements: {
+        followers: 50000,
+        engagement: 3.5,
+        niche: ["Fitness", "Wellness", "Lifestyle"],
+        location: "United States",
+      },
+      budget: {
+        min: 2000,
+        max: 5000,
+        currency: "USD",
+      },
+      deliverables: [
+        "3 Instagram posts",
+        "2 Instagram stories",
+        "1 TikTok video",
+        "Before/after transformation content",
+      ],
+      timeline: "2 weeks",
+      status: "active",
+      applications: 12,
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+      deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
     },
     {
       id: "2",
-      name: "Sarah Kim",
-      avatar: "/placeholder-user.jpg",
-      followers: 89000,
-      engagement: 5.1,
-      platforms: ["Instagram", "YouTube"],
-      matchScore: 88,
-      price: 1800,
-      bio: "Fashion and beauty influencer sharing style tips and product reviews",
-      tags: ["fashion", "beauty", "style", "makeup"],
-      location: "New York, NY",
-      responseTime: "1-3 hours",
-      rating: 4.9,
-      completedCampaigns: 32,
+      title: "Healthy Living Tips Series",
+      description: "Create educational content about nutrition, meal prep, and healthy lifestyle habits.",
+      brand: {
+        name: "NutriLife",
+        avatar: "/placeholder-logo.png",
+        verified: true,
+      },
+      requirements: {
+        followers: 25000,
+        engagement: 4.0,
+        niche: ["Nutrition", "Health", "Lifestyle"],
+      },
+      budget: {
+        min: 1500,
+        max: 3000,
+        currency: "USD",
+      },
+      deliverables: [
+        "4 Instagram posts",
+        "3 Instagram stories",
+        "1 YouTube video",
+        "Recipe development",
+      ],
+      timeline: "3 weeks",
+      status: "active",
+      applications: 8,
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+      deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
     },
     {
       id: "3",
-      name: "Mike Johnson",
-      avatar: "/placeholder-user.jpg",
-      followers: 210000,
-      engagement: 3.8,
-      platforms: ["Instagram", "TikTok", "YouTube"],
-      matchScore: 82,
-      price: 3500,
-      bio: "Sports and fitness enthusiast motivating others through workout content",
-      tags: ["sports", "fitness", "motivation", "training"],
-      location: "Miami, FL",
-      responseTime: "4-6 hours",
-      rating: 4.7,
-      completedCampaigns: 28,
-    },
-    {
-      id: "4",
-      name: "Emma Rodriguez",
-      avatar: "/placeholder-user.jpg",
-      followers: 156000,
-      engagement: 4.7,
-      platforms: ["Instagram", "TikTok"],
-      matchScore: 91,
-      price: 2200,
-      bio: "Travel blogger sharing adventures and destination guides worldwide",
-      tags: ["travel", "adventure", "lifestyle", "photography"],
-      location: "San Francisco, CA",
-      responseTime: "1-2 hours",
-      rating: 4.9,
-      completedCampaigns: 41,
-    },
-    {
-      id: "5",
-      name: "David Park",
-      avatar: "/placeholder-user.jpg",
-      followers: 75000,
-      engagement: 6.2,
-      platforms: ["Instagram", "YouTube"],
-      matchScore: 87,
-      price: 1500,
-      bio: "Tech reviewer and gadget enthusiast sharing the latest in technology",
-      tags: ["tech", "gadgets", "reviews", "innovation"],
-      location: "Seattle, WA",
-      responseTime: "3-5 hours",
-      rating: 4.6,
-      completedCampaigns: 23,
-    },
-    {
-      id: "6",
-      name: "Lisa Thompson",
-      avatar: "/placeholder-user.jpg",
-      followers: 320000,
-      engagement: 3.2,
-      platforms: ["Instagram", "TikTok", "YouTube"],
-      matchScore: 78,
-      price: 4800,
-      bio: "Food blogger and recipe creator inspiring home cooking",
-      tags: ["food", "cooking", "recipes", "lifestyle"],
-      location: "Austin, TX",
-      responseTime: "6-8 hours",
-      rating: 4.5,
-      completedCampaigns: 35,
-    },
-    {
-      id: "7",
-      name: "James Wilson",
-      avatar: "/placeholder-user.jpg",
-      followers: 95000,
-      engagement: 5.8,
-      platforms: ["Instagram", "TikTok"],
-      matchScore: 93,
-      price: 1900,
-      bio: "Sustainable living advocate promoting eco-friendly lifestyle choices",
-      tags: ["sustainability", "eco-friendly", "lifestyle", "green"],
-      location: "Portland, OR",
-      responseTime: "2-3 hours",
-      rating: 4.8,
-      completedCampaigns: 19,
-    },
-    {
-      id: "8",
-      name: "Maria Garcia",
-      avatar: "/placeholder-user.jpg",
-      followers: 180000,
-      engagement: 4.0,
-      platforms: ["Instagram", "YouTube"],
-      matchScore: 85,
-      price: 2800,
-      bio: "Parenting influencer sharing tips for modern families",
-      tags: ["parenting", "family", "lifestyle", "kids"],
-      location: "Chicago, IL",
-      responseTime: "4-6 hours",
-      rating: 4.7,
-      completedCampaigns: 26,
+      title: "Workout Motivation Campaign",
+      description: "Inspire followers with motivational workout content and fitness tips.",
+      brand: {
+        name: "GymGear Plus",
+        avatar: "/placeholder-logo.png",
+        verified: false,
+      },
+      requirements: {
+        followers: 100000,
+        engagement: 4.5,
+        niche: ["Fitness", "Motivation", "Sports"],
+      },
+      budget: {
+        min: 3000,
+        max: 8000,
+        currency: "USD",
+      },
+      deliverables: [
+        "5 Instagram posts",
+        "3 Instagram stories",
+        "2 TikTok videos",
+        "Live workout session",
+      ],
+      timeline: "4 weeks",
+      status: "active",
+      applications: 15,
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+      deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
     },
   ]
 
-  const calculateMatchScore = (influencer: InfluencerMatch, campaign: Partial<Campaign>): number => {
-    let score = 0
-    let totalFactors = 0
+  const acceptedDeals: AcceptedDeal[] = [
+    {
+      id: "deal-1",
+      campaignId: "1",
+      campaignTitle: "Summer Fitness Challenge",
+      influencer: {
+        name: "Alex Chen",
+        avatar: "/placeholder-user.jpg",
+        followers: 125000,
+      },
+      dealDetails: {
+        price: 2500,
+        deliverables: ["3 Instagram posts", "2 Instagram stories", "1 TikTok video"],
+        timeline: "2 weeks",
+      },
+      status: "active",
+      startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 12),
+      progress: 60,
+    },
+    {
+      id: "deal-2",
+      campaignId: "2",
+      campaignTitle: "Healthy Living Tips Series",
+      influencer: {
+        name: "Sarah Kim",
+        avatar: "/placeholder-user.jpg",
+        followers: 89000,
+      },
+      dealDetails: {
+        price: 1800,
+        deliverables: ["4 Instagram posts", "3 Instagram stories", "1 YouTube video"],
+        timeline: "3 weeks",
+      },
+      status: "active",
+      startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 16),
+      progress: 30,
+    },
+  ]
 
-    // Follower count match (30% weight)
-    if (campaign.minFollowers) {
-      const followerScore = Math.min(100, (influencer.followers / campaign.minFollowers) * 100)
-      score += followerScore * 0.3
-      totalFactors += 0.3
-    }
+  const [newCampaign, setNewCampaign] = useState({
+    title: "",
+    description: "",
+    minFollowers: 25000,
+    minEngagement: 3.5,
+    niches: [] as string[],
+    location: "",
+    minBudget: 1000,
+    maxBudget: 5000,
+    deliverables: [] as string[],
+    timeline: "2 weeks",
+  })
 
-    // Engagement rate match (25% weight)
-    if (campaign.minEngagement) {
-      const engagementScore = Math.min(100, (influencer.engagement / campaign.minEngagement) * 100)
-      score += engagementScore * 0.25
-      totalFactors += 0.25
-    }
-
-    // Niche match (25% weight)
-    if (campaign.niche && influencer.tags.includes(campaign.niche)) {
-      score += 100 * 0.25
-      totalFactors += 0.25
-    }
-
-    // Budget compatibility (20% weight)
-    if (campaign.budget) {
-      const budgetScore = Math.max(0, 100 - ((influencer.price - campaign.budget) / campaign.budget) * 100)
-      score += Math.max(0, budgetScore) * 0.2
-      totalFactors += 0.2
-    }
-
-    return totalFactors > 0 ? Math.round(score / totalFactors) : 0
-  }
+  const filteredCampaigns = campaigns.filter(campaign =>
+    campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    campaign.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    campaign.brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const handleCreateCampaign = () => {
-    if (newCampaign.title && newCampaign.description && newCampaign.budget) {
-      // Calculate matches with improved scoring
-      const matches = mockInfluencers
-        .map(influencer => ({
-          ...influencer,
-          matchScore: calculateMatchScore(influencer, newCampaign)
-        }))
-        .filter(influencer => 
-          influencer.followers >= (newCampaign.minFollowers || 0) &&
-          influencer.engagement >= (newCampaign.minEngagement || 0) &&
-          (newCampaign.niche ? influencer.tags.includes(newCampaign.niche) : true) &&
-          influencer.price <= (newCampaign.budget || Infinity)
-        )
-        .sort((a, b) => b.matchScore - a.matchScore)
-
-      const campaign: Campaign = {
-        id: Date.now().toString(),
-        title: newCampaign.title,
-        description: newCampaign.description,
-        budget: newCampaign.budget,
-        requirements: newCampaign.requirements || [],
-        category: newCampaign.category || "",
-        location: newCampaign.location || "",
-        duration: newCampaign.duration || "",
-        status: "active",
-        createdAt: new Date(),
-        applications: 0,
-        matches,
-        minFollowers: newCampaign.minFollowers,
-        minEngagement: newCampaign.minEngagement,
-        niche: newCampaign.niche,
-      }
-      setCampaigns([...campaigns, campaign])
-      setSelectedCampaign(campaign)
-      setNewCampaign({ status: "draft", requirements: [], applications: 0, matches: [], minFollowers: 0, minEngagement: 0, niche: "" })
-      setShowCreateDialog(false)
-    }
-  }
-
-  const addRequirement = (requirement: string) => {
-    if (requirement && !newCampaign.requirements?.includes(requirement)) {
-      setNewCampaign({
-        ...newCampaign,
-        requirements: [...(newCampaign.requirements || []), requirement],
-      })
-    }
-  }
-
-  const removeRequirement = (requirement: string) => {
+    // Add campaign creation logic here
+    console.log("Creating campaign:", newCampaign)
+    setShowCreateDialog(false)
     setNewCampaign({
-      ...newCampaign,
-      requirements: newCampaign.requirements?.filter(r => r !== requirement) || [],
+      title: "",
+      description: "",
+      minFollowers: 25000,
+      minEngagement: 3.5,
+      niches: [],
+      location: "",
+      minBudget: 1000,
+      maxBudget: 5000,
+      deliverables: [],
+      timeline: "2 weeks",
     })
   }
 
-  const filteredMatches = selectedCampaign?.matches
-    .filter(influencer => 
-      influencer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      influencer.bio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      influencer.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "followers":
-          return b.followers - a.followers
-        case "engagement":
-          return b.engagement - a.engagement
-        case "price":
-          return a.price - b.price
-        default:
-          return b.matchScore - a.matchScore
-      }
-    }) || []
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    return num.toString()
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-700"
+      case "completed":
+        return "bg-blue-100 text-blue-700"
+      case "paused":
+        return "bg-yellow-100 text-yellow-700"
+      case "draft":
+        return "bg-gray-100 text-gray-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
+  }
+
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return "bg-green-500"
+    if (progress >= 50) return "bg-yellow-500"
+    return "bg-blue-500"
+  }
 
   return (
-    <div className="space-y-6">
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogTrigger asChild>
-          <Button className="bg-blue-600 hover:bg-blue-700">
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {userRole === "brand" ? "Campaign Management" : "Available Campaigns"}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {userRole === "brand" 
+              ? "Create and manage your influencer marketing campaigns" 
+              : "Discover and apply to brand campaigns that match your profile"
+            }
+          </p>
+        </div>
+        {userRole === "brand" && (
+          <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Create Campaign
           </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        )}
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="create">
+            {userRole === "brand" ? "My Campaigns" : "Available Campaigns"}
+          </TabsTrigger>
+          <TabsTrigger value="active">
+            {userRole === "brand" ? "Active Deals" : "My Applications"}
+          </TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+        </TabsList>
+
+        {/* Campaigns Tab */}
+        <TabsContent value="create" className="space-y-6">
+          {/* Search and Filters */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search campaigns..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={selectedNiche} onValueChange={setSelectedNiche}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Niches</SelectItem>
+                <SelectItem value="fitness">Fitness</SelectItem>
+                <SelectItem value="nutrition">Nutrition</SelectItem>
+                <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                <SelectItem value="fashion">Fashion</SelectItem>
+                <SelectItem value="beauty">Beauty</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline">
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
+            </Button>
+          </div>
+
+          {/* Campaigns Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCampaigns.map((campaign) => (
+              <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={campaign.brand.avatar} />
+                        <AvatarFallback>
+                          {campaign.brand.name.split(" ").map(n => n[0]).join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold">{campaign.brand.name}</h3>
+                        {campaign.brand.verified && (
+                          <CheckCircle className="w-4 h-4 text-blue-500" />
+                        )}
+                      </div>
+                    </div>
+                    <Badge className={getStatusColor(campaign.status)}>
+                      {campaign.status}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg mt-3">{campaign.title}</CardTitle>
+                  <p className="text-sm text-gray-600">{campaign.description}</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Requirements */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Requirements</h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3 text-gray-400" />
+                        <span>{formatNumber(campaign.requirements.followers)}+</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3 text-gray-400" />
+                        <span>{campaign.requirements.engagement}%+</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {campaign.requirements.niche.map(niche => (
+                        <Badge key={niche} variant="outline" className="text-xs">
+                          {niche}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Budget */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="w-4 h-4 text-green-500" />
+                      <span className="font-medium">
+                        ${campaign.budget.min.toLocaleString()} - ${campaign.budget.max.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <Clock className="w-3 h-3" />
+                      <span>{campaign.timeline}</span>
+                    </div>
+                  </div>
+
+                  {/* Applications */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{campaign.applications} applications</span>
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <Calendar className="w-3 h-3" />
+                      <span>Due {campaign.deadline.toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    {userRole === "brand" ? (
+                      <>
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Eye className="w-4 h-4 mr-2" />
+                          View
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button className="flex-1">
+                        <Send className="w-4 h-4 mr-2" />
+                        Apply Now
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Active Deals Tab */}
+        <TabsContent value="active" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {acceptedDeals.map((deal) => (
+              <Card key={deal.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">{deal.campaignTitle}</h3>
+                    <Badge className={getStatusColor(deal.status)}>
+                      {deal.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={deal.influencer.avatar} />
+                      <AvatarFallback>
+                        {deal.influencer.name.split(" ").map(n => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h4 className="font-medium">{deal.influencer.name}</h4>
+                      <p className="text-sm text-gray-600">
+                        {formatNumber(deal.influencer.followers)} followers
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Budget</span>
+                      <span className="font-medium">${deal.dealDetails.price.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Timeline</span>
+                      <span className="font-medium">{deal.dealDetails.timeline}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Progress</span>
+                      <span className="font-medium">{deal.progress}%</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${getProgressColor(deal.progress)}`}
+                      style={{ width: `${deal.progress}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h5 className="font-medium text-sm">Deliverables</h5>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      {deal.dealDetails.deliverables.map((deliverable, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                          {deliverable}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Details
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Completed Tab */}
+        <TabsContent value="completed" className="space-y-6">
+          <div className="text-center py-12">
+            <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No completed campaigns yet</h3>
+            <p className="text-gray-500">Completed campaigns will appear here</p>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Create Campaign Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Create New Campaign</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <Label htmlFor="title">Campaign Title</Label>
               <Input
                 id="title"
-                placeholder="e.g., Summer Fitness Challenge"
-                value={newCampaign.title || ""}
+                value={newCampaign.title}
                 onChange={(e) => setNewCampaign({ ...newCampaign, title: e.target.value })}
+                placeholder="Enter campaign title"
               />
             </div>
-            
             <div>
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Describe your campaign goals and requirements..."
-                value={newCampaign.description || ""}
+                value={newCampaign.description}
                 onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
+                placeholder="Describe your campaign requirements"
+                rows={3}
               />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="budget">Budget ($)</Label>
-                <Input
-                  id="budget"
-                  type="number"
-                  placeholder="5000"
-                  value={newCampaign.budget || ""}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={newCampaign.category} onValueChange={(value) => setNewCampaign({ ...newCampaign, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fitness">Fitness</SelectItem>
-                    <SelectItem value="fashion">Fashion</SelectItem>
-                    <SelectItem value="beauty">Beauty</SelectItem>
-                    <SelectItem value="food">Food</SelectItem>
-                    <SelectItem value="travel">Travel</SelectItem>
-                    <SelectItem value="tech">Technology</SelectItem>
-                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                    <SelectItem value="parenting">Parenting</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  placeholder="e.g., New York, NY"
-                  value={newCampaign.location || ""}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, location: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="duration">Duration</Label>
-                <Select value={newCampaign.duration} onValueChange={(value) => setNewCampaign({ ...newCampaign, duration: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1-week">1 Week</SelectItem>
-                    <SelectItem value="2-weeks">2 Weeks</SelectItem>
-                    <SelectItem value="1-month">1 Month</SelectItem>
-                    <SelectItem value="3-months">3 Months</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="minFollowers">Minimum Followers</Label>
                 <Input
                   id="minFollowers"
                   type="number"
-                  placeholder="e.g., 10000"
-                  value={newCampaign.minFollowers || ""}
-                  onChange={e => setNewCampaign({ ...newCampaign, minFollowers: Number(e.target.value) })}
+                  value={newCampaign.minFollowers}
+                  onChange={(e) => setNewCampaign({ ...newCampaign, minFollowers: Number(e.target.value) })}
                 />
               </div>
               <div>
-                <Label htmlFor="minEngagement">Minimum Engagement Rate (%)</Label>
+                <Label htmlFor="minEngagement">Minimum Engagement (%)</Label>
                 <Input
                   id="minEngagement"
                   type="number"
                   step="0.1"
-                  placeholder="e.g., 3.5"
-                  value={newCampaign.minEngagement || ""}
-                  onChange={e => setNewCampaign({ ...newCampaign, minEngagement: Number(e.target.value) })}
+                  value={newCampaign.minEngagement}
+                  onChange={(e) => setNewCampaign({ ...newCampaign, minEngagement: Number(e.target.value) })}
                 />
               </div>
             </div>
-
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="minBudget">Minimum Budget ($)</Label>
+                <Input
+                  id="minBudget"
+                  type="number"
+                  value={newCampaign.minBudget}
+                  onChange={(e) => setNewCampaign({ ...newCampaign, minBudget: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="maxBudget">Maximum Budget ($)</Label>
+                <Input
+                  id="maxBudget"
+                  type="number"
+                  value={newCampaign.maxBudget}
+                  onChange={(e) => setNewCampaign({ ...newCampaign, maxBudget: Number(e.target.value) })}
+                />
+              </div>
+            </div>
             <div>
-              <Label htmlFor="niche">Niche</Label>
-              <Select
-                value={newCampaign.niche || ""}
-                onValueChange={val => setNewCampaign({ ...newCampaign, niche: val })}
-              >
-                <SelectTrigger id="niche">
-                  <SelectValue placeholder="Select a niche" />
+              <Label htmlFor="timeline">Timeline</Label>
+              <Select value={newCampaign.timeline} onValueChange={(value) => setNewCampaign({ ...newCampaign, timeline: value })}>
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fitness">Fitness</SelectItem>
-                  <SelectItem value="beauty">Beauty</SelectItem>
-                  <SelectItem value="fashion">Fashion</SelectItem>
-                  <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                  <SelectItem value="travel">Travel</SelectItem>
-                  <SelectItem value="tech">Tech</SelectItem>
-                  <SelectItem value="food">Food</SelectItem>
-                  <SelectItem value="parenting">Parenting</SelectItem>
-                  <SelectItem value="sustainability">Sustainability</SelectItem>
+                  <SelectItem value="1 week">1 week</SelectItem>
+                  <SelectItem value="2 weeks">2 weeks</SelectItem>
+                  <SelectItem value="3 weeks">3 weeks</SelectItem>
+                  <SelectItem value="1 month">1 month</SelectItem>
+                  <SelectItem value="2 months">2 months</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <div>
-              <Label>Requirements (Non-negotiables)</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  placeholder="Add requirement (e.g., fitness, lifestyle)"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      addRequirement(e.currentTarget.value)
-                      e.currentTarget.value = ''
-                    }
-                  }}
-                />
-                <Button onClick={() => {
-                  const input = document.querySelector('input[placeholder*="requirement"]') as HTMLInputElement
-                  if (input?.value) {
-                    addRequirement(input.value)
-                    input.value = ''
-                  }
-                }}>
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {newCampaign.requirements?.map((req, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {req}
-                    <X
-                      className="w-3 h-3 cursor-pointer"
-                      onClick={() => removeRequirement(req)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
+            <div className="flex gap-2">
+              <Button onClick={handleCreateCampaign} className="flex-1">
+                Create Campaign
+              </Button>
               <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
                 Cancel
-              </Button>
-              <Button onClick={handleCreateCampaign}>
-                Create Campaign
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Campaigns List */}
-      <div className="grid gap-4">
-        {campaigns.map((campaign) => (
-          <Card key={campaign.id} className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-blue-600" />
-                    {campaign.title}
-                  </CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">{campaign.description}</p>
-                </div>
-                <Badge variant={campaign.status === "active" ? "default" : "secondary"}>
-                  {campaign.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">Budget:</span>
-                  <span className="ml-2 font-semibold">${campaign.budget.toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Matches:</span>
-                  <span className="ml-2 font-semibold">{campaign.matches.length} influencers</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Applications:</span>
-                  <span className="ml-2 font-semibold">{campaign.applications}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Created:</span>
-                  <span className="ml-2">{campaign.createdAt.toLocaleDateString()}</span>
-                </div>
-              </div>
-              
-              {/* Campaign Requirements Summary */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-sm mb-2">Campaign Requirements:</h4>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {campaign.minFollowers && (
-                    <Badge variant="outline">Min {campaign.minFollowers.toLocaleString()} followers</Badge>
-                  )}
-                  {campaign.minEngagement && (
-                    <Badge variant="outline">Min {campaign.minEngagement}% engagement</Badge>
-                  )}
-                  {campaign.niche && (
-                    <Badge variant="outline">{campaign.niche} niche</Badge>
-                  )}
-                  {campaign.requirements?.map((req, index) => (
-                    <Badge key={index} variant="outline">{req}</Badge>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedCampaign(campaign)}
-                >
-                  View Matches ({campaign.matches.length})
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Enhanced Matches Dialog */}
-      {selectedCampaign && (
-        <Dialog open={!!selectedCampaign} onOpenChange={() => setSelectedCampaign(null)}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-600" />
-                Matches for "{selectedCampaign.title}"
-              </DialogTitle>
-              <p className="text-sm text-gray-600">
-                Found {filteredMatches.length} influencers matching your criteria
-              </p>
-            </DialogHeader>
-            
-            {/* Search and Filter Controls */}
-            <div className="flex gap-4 items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Search influencers by name, bio, or tags..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="matchScore">Sort by Match Score</SelectItem>
-                  <SelectItem value="followers">Sort by Followers</SelectItem>
-                  <SelectItem value="engagement">Sort by Engagement</SelectItem>
-                  <SelectItem value="price">Sort by Price</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-4">
-              {filteredMatches.map((influencer) => (
-                <Card key={influencer.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <img
-                          src={influencer.avatar}
-                          alt={influencer.name}
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-lg">{influencer.name}</h3>
-                            <Badge variant="secondary" className="flex items-center gap-1">
-                              <Star className="w-3 h-3" />
-                              {influencer.rating}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {influencer.completedCampaigns} campaigns
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-gray-600 mb-3">{influencer.bio}</p>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4 text-gray-500" />
-                              <span>{influencer.followers.toLocaleString()} followers</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="w-4 h-4 text-gray-500" />
-                              <span>{influencer.engagement}% engagement</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <DollarSign className="w-4 h-4 text-gray-500" />
-                              <span>${influencer.price}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4 text-gray-500" />
-                              <span>{influencer.responseTime}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 mt-3">
-                            <span className="text-xs text-gray-500">Platforms:</span>
-                            <div className="flex gap-1">
-                              {influencer.platforms.map(platform => (
-                                <Badge key={platform} variant="outline" className="text-xs">
-                                  {platform}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-500">Tags:</span>
-                            <div className="flex gap-1">
-                              {influencer.tags.map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right ml-4">
-                        <div className="flex items-center gap-1 mb-3">
-                          <Award className="w-4 h-4 text-yellow-500" />
-                          <span className="font-semibold text-lg">{influencer.matchScore}% match</span>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Button size="sm" variant="outline" className="w-full">
-                            <MessageSquare className="w-4 h-4 mr-1" />
-                            Message
-                          </Button>
-                          <Button size="sm" className="w-full">
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            Hire for ${influencer.price}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {filteredMatches.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No influencers match your current search criteria.</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSearchTerm("")}
-                    className="mt-2"
-                  >
-                    Clear Search
-                  </Button>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   )
 } 
