@@ -20,8 +20,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("login");
   const [mounted, setMounted] = useState(false);
-  const { data: session, status } = useSession();
   const router = useRouter();
+
+  // Use session hook with proper error handling
+  const sessionResult = useSession();
+  const session = sessionResult?.data;
+  const status = sessionResult?.status;
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -111,7 +115,7 @@ export default function LoginPage() {
     );
   }
 
-  // Show session info only after loading is complete
+  // Show loading state while session is loading
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -120,6 +124,7 @@ export default function LoginPage() {
     );
   }
 
+  // Show logged in state if user has session
   if (session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
