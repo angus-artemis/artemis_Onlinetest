@@ -1,15 +1,22 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import InfluencerDashboard from "@/components/InfluencerDashboard";
-
-// Prevent static generation
-export const dynamic = 'force-dynamic';
+import { useState } from "react";
 
 export default function HomePage() {
-  // Temporarily show the original dashboard without authentication
-  return <InfluencerDashboard />;
+  const [count, setCount] = useState(0);
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Artemis App</h1>
+        <p className="text-gray-600 mb-8">Your influencer marketing platform</p>
+        <button 
+          onClick={() => setCount(count + 1)}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
+        >
+          Clicked {count} times
+        </button>
+      </div>
+    </div>
+  );
 }
