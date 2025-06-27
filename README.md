@@ -11,7 +11,7 @@
 - ✅ **Enhanced Dashboard** - New navigation with 8 tabs
 
 ## 🔑 **Test Credentials**
-- **Creator**: `alex@artemis.com` / `artemis123`
+- **Creator**: `glenn@artemis.com` / `artemis123`
 - **Brand**: `brand@artemis.com` / `artemis123`
 
 ## 📱 **Navigation Tabs**

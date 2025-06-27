@@ -17,7 +17,7 @@ export function useDashboardData() {
       setIsLoading(true)
 
       // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Generate realistic analytics data for the past 30 days
       const analytics: AnalyticsData[] = []
@@ -126,10 +126,10 @@ export function useDashboardData() {
 
       // Content performance data with more realistic metrics
       const performance: ContentPerformance[] = [
-        { type: "Reels", engagement: 9.8, posts: 12, trend: "up", avgLikes: 4250, avgComments: 245 },
-        { type: "Carousels", engagement: 6.4, posts: 8, trend: "up", avgLikes: 2890, avgComments: 167 },
-        { type: "Single Posts", engagement: 4.2, posts: 15, trend: "down", avgLikes: 1950, avgComments: 89 },
-        { type: "Stories", engagement: 11.3, posts: 28, trend: "up", avgLikes: 0, avgComments: 67 },
+        { type: "Reels", title: "Short-form Video", platform: "Instagram", engagement: 9.8, posts: 12, trend: "up", avgLikes: 4250, avgComments: 245 },
+        { type: "Carousels", title: "Multi-image Posts", platform: "Instagram", engagement: 6.4, posts: 8, trend: "up", avgLikes: 2890, avgComments: 167 },
+        { type: "Single Posts", title: "Photo Posts", platform: "Instagram", engagement: 4.2, posts: 15, trend: "down", avgLikes: 1950, avgComments: 89 },
+        { type: "Stories", title: "Ephemeral Content", platform: "Instagram", engagement: 11.3, posts: 28, trend: "up", avgLikes: 0, avgComments: 67 },
       ]
 
       // Real brand opportunities with actual company names
@@ -138,6 +138,9 @@ export function useDashboardData() {
           id: "1",
           brand: "Gymshark",
           category: "Athletic Apparel",
+          description: "Fitness apparel collaboration for new collection launch",
+          budget: 10000,
+          platform: "Instagram",
           estimatedPay: "$8,000 - $12,000",
           requirements: "2 Reels + 5 Stories + 1 YouTube Short",
           deadline: "Jan 15, 2025",
@@ -147,6 +150,9 @@ export function useDashboardData() {
           id: "2",
           brand: "Optimum Nutrition",
           category: "Sports Supplements",
+          description: "Protein supplement campaign targeting fitness enthusiasts",
+          budget: 7000,
+          platform: "Instagram",
           estimatedPay: "$5,500 - $8,500",
           requirements: "1 Post + 3 Stories + Product Review Video",
           deadline: "Dec 28, 2024",
@@ -156,6 +162,9 @@ export function useDashboardData() {
           id: "3",
           brand: "Nike Training",
           category: "Sportswear",
+          description: "Training app promotion and workout content creation",
+          budget: 15000,
+          platform: "Instagram",
           estimatedPay: "$12,000 - $18,000",
           requirements: "3 Reels + 7 Stories + App Feature Demo",
           deadline: "Feb 5, 2025",
@@ -165,15 +174,21 @@ export function useDashboardData() {
           id: "4",
           brand: "MyFitnessPal",
           category: "Fitness Apps",
+          description: "App tutorial and nutrition tracking content",
+          budget: 5250,
+          platform: "Instagram",
           estimatedPay: "$4,000 - $6,500",
           requirements: "2 Posts + 4 Stories + Tutorial Video",
           deadline: "Jan 20, 2025",
-          status: "pending approval",
+          status: "applied",
         },
         {
           id: "5",
           brand: "Lululemon",
           category: "Athletic Wear",
+          description: "Athleisure fashion campaign for new collection",
+          budget: 12500,
+          platform: "Instagram",
           estimatedPay: "$10,000 - $15,000",
           requirements: "2 Reels + 6 Stories + Styling Guide",
           deadline: "Mar 1, 2025",

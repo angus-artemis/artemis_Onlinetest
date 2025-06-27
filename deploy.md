@@ -23,7 +23,7 @@ vercel --prod
 - ✅ Enhanced Dashboard with New Tabs
 
 ## 🔑 **Test Credentials:**
-- **Creator**: `alex@artemis.com` / `artemis123`
+- **Creator**: `glenn@artemis.com` / `artemis123`
 - **Brand**: `brand@artemis.com` / `artemis123`
 
 ## 📱 **New Navigation Tabs:**

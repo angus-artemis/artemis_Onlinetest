@@ -230,7 +230,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded border border-purple-100">
                   <p className="font-medium text-purple-700">Creator</p>
-                  <p className="text-purple-600">alex@artemis.com</p>
+                  <p className="text-purple-600">glenn@artemis.com</p>
                   <p className="text-purple-600">artemis123</p>
                 </div>
                 <div className="p-2 bg-blue-50 rounded border border-blue-100">

@@ -19,8 +19,8 @@ export function BrandReport() {
   const topPerformers = [
     {
       id: "1",
-      name: "Alex Johnson",
-      handle: "@alexfitness",
+      name: "Glenn Chen",
+      handle: "@glennchen_fitness",
       campaign: "Summer Collection",
       engagement: 12.4,
       roi: 4.2,

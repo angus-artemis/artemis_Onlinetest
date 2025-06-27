@@ -38,7 +38,7 @@ export function AccountConnection({ onComplete }: AccountConnectionProps) {
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>([
     {
       platform: "Instagram",
-      username: "@alexfitness",
+      username: "@glennfitness",
       followers: 24567,
       isConnected: false,
       lastSync: "",

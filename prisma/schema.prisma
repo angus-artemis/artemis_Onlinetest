@@ -1,0 +1,327 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  username      String?   @unique
+  avatar        String?
+  bio           String?
+  location      String?
+  website       String?
+  phone         String?
+  userType      UserType  @default(CREATOR)
+  verified      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  hashedPassword String?
+
+  // Creator-specific fields
+  followers     Int       @default(0)
+  engagement    Float     @default(0)
+  niches        Json      @default("[]")
+  pricePerPost  Int?
+  availability  Availability @default(AVAILABLE)
+  rating        Float     @default(0)
+  totalCampaigns Int      @default(0)
+  responseRate  Float     @default(0)
+  responseTime  String?
+  platforms     Platform[]
+  
+  // Brand-specific fields
+  brandName     String?
+  industry      String?
+  budget        Int?
+  
+  // Relationships
+  campaigns     Campaign[]
+  applications  Application[]
+  messages      Message[] @relation("UserMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  payments      Payment[]
+  notifications Notification[]
+  teamMembers   TeamMember[]
+  analytics     Analytics[]
+  deals         Deal[]
+  
+  @@map("users")
+}
+
+model Campaign {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  brandId       String
+  brand         User      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  
+  // Requirements
+  minFollowers  Int
+  minEngagement Float
+  niches        Json      @default("[]")
+  location      String?
+  
+  // Budget
+  minBudget     Int
+  maxBudget     Int
+  currency      String    @default("USD")
+  
+  // Deliverables
+  deliverables  Json      @default("[]")
+  timeline      String
+  
+  // Status
+  status        CampaignStatus @default(DRAFT)
+  applicationsCount  Int       @default(0)
+  
+  // Dates
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deadline      DateTime?
+  startDate     DateTime?
+  endDate       DateTime?
+  
+  // Relationships
+  deals         Deal[]
+  analytics     Analytics[]
+  applications  Application[]
+  
+  @@map("campaigns")
+}
+
+model Application {
+  id            String    @id @default(cuid())
+  campaignId    String
+  campaign      Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creatorId     String
+  creator       User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  // Application details
+  proposal      String
+  price         Int
+  timeline      String
+  deliverables  Json      @default("[]")
+  
+  // Status
+  status        ApplicationStatus @default(PENDING)
+  
+  // Dates
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([campaignId, creatorId])
+  @@map("applications")
+}
+
+model Deal {
+  id            String    @id @default(cuid())
+  campaignId    String
+  campaign      Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creatorId     String
+  creator       User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  // Deal details
+  price         Int
+  deliverables  Json      @default("[]")
+  timeline      String
+  progress      Int       @default(0)
+  
+  // Status
+  status        DealStatus @default(ACTIVE)
+  
+  // Dates
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relationships
+  payments      Payment[]
+  analytics     Analytics[]
+  
+  @@map("deals")
+}
+
+model Message {
+  id            String    @id @default(cuid())
+  senderId      String
+  sender        User      @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId    String
+  receiver      User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  content       String
+  messageType   MessageType @default(TEXT)
+  attachments   Json      @default("[]")
+  read          Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("messages")
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  dealId        String?
+  deal          Deal?     @relation(fields: [dealId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  amount        Int
+  currency      String    @default("USD")
+  status        PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  stripePaymentId String?
+  
+  description   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("payments")
+}
+
+model Notification {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title         String
+  message       String
+  type          NotificationType
+  read          Boolean   @default(false)
+  data          Json?
+  
+  createdAt     DateTime  @default(now())
+  
+  @@map("notifications")
+}
+
+model TeamMember {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role          String
+  permissions   Json      @default("[]")
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("team_members")
+}
+
+model Analytics {
+  id            String    @id @default(cuid())
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  campaignId    String?
+  campaign      Campaign? @relation(fields: [campaignId], references: [id])
+  dealId        String?
+  deal          Deal?     @relation(fields: [dealId], references: [id])
+  
+  // Metrics
+  impressions   Int       @default(0)
+  clicks        Int       @default(0)
+  engagement    Float     @default(0)
+  reach         Int       @default(0)
+  conversions   Int       @default(0)
+  revenue       Float     @default(0)
+  
+  // Date
+  date          DateTime  @default(now())
+  
+  @@map("analytics")
+}
+
+model Platform {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name          String
+  username      String
+  followers     Int       @default(0)
+  verified      Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("platforms")
+}
+
+// Enums
+enum UserType {
+  CREATOR
+  BRAND
+  ADMIN
+}
+
+enum Availability {
+  AVAILABLE
+  BUSY
+  UNAVAILABLE
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum DealStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  STRIPE
+  PAYPAL
+  BANK_TRANSFER
+  CRYPTO
+}
+
+enum NotificationType {
+  CAMPAIGN_UPDATE
+  APPLICATION_RECEIVED
+  DEAL_APPROVED
+  PAYMENT_RECEIVED
+  MESSAGE_RECEIVED
+  SYSTEM_ALERT
+}

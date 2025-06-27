@@ -80,8 +80,8 @@ export function ViralFeatures() {
     },
     {
       rank: 3,
-      name: "Alex Johnson",
-      handle: "@alexfitness",
+      name: "Glenn Chen",
+      handle: "@glennchen_fitness",
       points: 1950,
       growth: "+89%",
       avatar: "AJ",
@@ -172,7 +172,7 @@ export function ViralFeatures() {
   ]
 
   const referralProgram = {
-    code: "ALEX2025",
+    code: "GLENN2025",
     referrals: 8,
     target: 10,
     reward: "Free Pro subscription for 3 months",

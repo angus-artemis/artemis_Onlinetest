@@ -32,8 +32,8 @@ export function BrandHome() {
   const topCreators: Creator[] = [
     {
       id: "1",
-      name: "Alex Johnson",
-      handle: "@alexfitness",
+      name: "Glenn Chen",
+      handle: "@glennchen_fitness",
       followers: 24567,
       engagement: 8.7,
       niche: "Fitness",

@@ -28,8 +28,8 @@ export function TeamCollaboration() {
   const teamMembers = [
     {
       id: "1",
-      name: "Alex Johnson",
-      email: "alex@example.com",
+      name: "Glenn Chen",
+      email: "glenn@glennfitness.com",
       role: "owner",
       avatar: "AJ",
       status: "active",
@@ -133,7 +133,7 @@ export function TeamCollaboration() {
   const activityFeed = [
     {
       id: "1",
-      user: "Sarah Chen",
+      user: "Glenn Chen",
       action: "created a new post",
       target: "Morning Motivation Reel",
       time: "2 hours ago",
@@ -157,7 +157,7 @@ export function TeamCollaboration() {
     },
     {
       id: "4",
-      user: "Alex Johnson",
+      user: "Glenn Chen",
       action: "approved brand partnership",
       target: "Gymshark Collaboration",
       time: "2 days ago",

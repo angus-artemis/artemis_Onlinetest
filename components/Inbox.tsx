@@ -50,11 +50,16 @@ interface Message {
 
 interface Conversation {
   id: string
-  participant: {
+  brand: {
     id: string
     name: string
     avatar: string
-    type: "brand" | "influencer"
+    verified: boolean
+  }
+  creator: {
+    id: string
+    name: string
+    avatar: string
     verified: boolean
   }
   lastMessage: Message
@@ -100,17 +105,22 @@ export function Inbox() {
   const mockConversations: Conversation[] = [
     {
       id: "1",
-      participant: {
-        id: "influencer-1",
-        name: "Alex Chen",
+      brand: {
+        id: "brand-1",
+        name: "SportFit Pro",
+        avatar: "/placeholder-logo.png",
+        verified: true,
+      },
+      creator: {
+        id: "creator-1",
+        name: "Glenn Chen",
         avatar: "/placeholder-user.jpg",
-        type: "influencer",
         verified: true,
       },
       lastMessage: {
         id: "msg-1",
-        senderId: "influencer-1",
-        receiverId: "current-user",
+        senderId: "creator-1",
+        receiverId: "brand-1",
         content: "Hi! I'm interested in your fitness campaign. I have 125K followers and 4.2% engagement rate.",
         timestamp: new Date(Date.now() - 1000 * 60 * 30),
         read: false,
@@ -127,17 +137,22 @@ export function Inbox() {
     },
     {
       id: "2",
-      participant: {
-        id: "influencer-2",
+      brand: {
+        id: "brand-2",
+        name: "NutriLife",
+        avatar: "/placeholder-logo.png",
+        verified: true,
+      },
+      creator: {
+        id: "creator-2",
         name: "Sarah Kim",
         avatar: "/placeholder-user.jpg",
-        type: "influencer",
         verified: true,
       },
       lastMessage: {
         id: "msg-2",
-        senderId: "current-user",
-        receiverId: "influencer-2",
+        senderId: "brand-2",
+        receiverId: "creator-2",
         content: "Perfect! Let's discuss the campaign details and timeline.",
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
         read: true,
@@ -145,33 +160,12 @@ export function Inbox() {
       },
       unreadCount: 0,
       campaign: {
-        id: "campaign-1",
-        title: "Summer Fitness Challenge",
-        budget: 2500,
+        id: "campaign-2",
+        title: "Healthy Living Tips Series",
+        budget: 1800,
         status: "active",
       },
       dealStatus: "negotiating",
-    },
-    {
-      id: "3",
-      participant: {
-        id: "brand-1",
-        name: "SportFit Pro",
-        avatar: "/placeholder-logo.png",
-        type: "brand",
-        verified: true,
-      },
-      lastMessage: {
-        id: "msg-3",
-        senderId: "brand-1",
-        receiverId: "current-user",
-        content: "We loved your recent fitness content! Would you be interested in a collaboration?",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        read: true,
-        type: "campaign",
-      },
-      unreadCount: 0,
-      dealStatus: "pending",
     },
   ]
 
@@ -189,7 +183,7 @@ export function Inbox() {
       id: "msg-2",
       senderId: "current-user",
       receiverId: "influencer-1",
-      content: "Hi Alex! Thanks for reaching out. Can you tell me more about your audience demographics?",
+      content: "Hi Glenn! Thanks for reaching out. Can you tell me more about your audience demographics?",
       timestamp: new Date(Date.now() - 1000 * 60 * 25),
       read: true,
       type: "text",
@@ -240,7 +234,8 @@ export function Inbox() {
   }, [selectedConversation])
 
   const filteredConversations = conversations.filter(conversation =>
-    conversation.participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    conversation.brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    conversation.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     conversation.lastMessage.content.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -250,7 +245,7 @@ export function Inbox() {
     const message: Message = {
       id: `msg-${Date.now()}`,
       senderId: currentUser.id,
-      receiverId: selectedConversation.participant.id,
+      receiverId: selectedConversation.creator.id,
       content: newMessage,
       timestamp: new Date(),
       read: false,
@@ -274,7 +269,7 @@ export function Inbox() {
     const message: Message = {
       id: `msg-${Date.now()}`,
       senderId: currentUser.id,
-      receiverId: selectedConversation.participant.id,
+      receiverId: selectedConversation.creator.id,
       content: action === "deal" ? "Deal accepted! Let's get started." : 
                action === "negotiate" ? "Let's negotiate the terms." : 
                "Thanks for your interest, but we'll pass on this opportunity.",
@@ -376,12 +371,12 @@ export function Inbox() {
                 <div className="flex items-start gap-3">
                   <div className="relative">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={conversation.participant.avatar} />
+                      <AvatarImage src={conversation.brand.avatar} />
                       <AvatarFallback>
-                        {conversation.participant.name.split(" ").map(n => n[0]).join("")}
+                        {conversation.brand.name.split(" ").map(n => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
-                    {conversation.participant.verified && (
+                    {conversation.brand.verified && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                         <CheckCircle className="w-2 h-2 text-white" />
                       </div>
@@ -389,44 +384,44 @@ export function Inbox() {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         <h3 className="font-semibold text-sm truncate">
-                          {conversation.participant.name}
+                          {conversation.brand.name}
                         </h3>
-                        <Badge variant="outline" className="text-xs">
-                          {conversation.participant.type === "influencer" ? "Creator" : "Brand"}
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          Brand
                         </Badge>
                       </div>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 flex-shrink-0">
                         {formatTimestamp(conversation.lastMessage.timestamp)}
                       </span>
                     </div>
                     
                     {conversation.campaign && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Target className="w-3 h-3 text-gray-400" />
-                        <span className="text-xs text-gray-600 truncate">
+                      <div className="flex items-center gap-1 mb-2">
+                        <Target className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-600 truncate flex-1">
                           {conversation.campaign.title}
                         </span>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs flex-shrink-0">
                           ${conversation.campaign.budget}
                         </Badge>
                       </div>
                     )}
                     
-                    <p className="text-sm text-gray-600 truncate mt-1">
+                    <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-2">
                       {conversation.lastMessage.content}
                     </p>
                     
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between">
                       {conversation.unreadCount > 0 && (
-                        <Badge className="bg-blue-500 text-white text-xs">
+                        <Badge className="bg-blue-500 text-white text-xs flex-shrink-0">
                           {conversation.unreadCount} new
                         </Badge>
                       )}
                       {conversation.dealStatus && (
-                        <Badge className={`text-xs ${getDealStatusColor(conversation.dealStatus)}`}>
+                        <Badge className={`text-xs flex-shrink-0 ${getDealStatusColor(conversation.dealStatus)}`}>
                           {conversation.dealStatus}
                         </Badge>
                       )}
@@ -448,18 +443,32 @@ export function Inbox() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={selectedConversation.participant.avatar} />
+                    <AvatarImage src={selectedConversation.brand.avatar} />
                     <AvatarFallback>
-                      {selectedConversation.participant.name.split(" ").map(n => n[0]).join("")}
+                      {selectedConversation.brand.name.split(" ").map(n => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={selectedConversation.creator.avatar} />
+                    <AvatarFallback>
+                      {selectedConversation.creator.name.split(" ").map(n => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold">{selectedConversation.participant.name}</h3>
+                    <h3 className="font-semibold">{selectedConversation.brand.name} ↔ {selectedConversation.creator.name}</h3>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">
-                        {selectedConversation.participant.type === "influencer" ? "Creator" : "Brand"}
+                        Brand
                       </Badge>
-                      {selectedConversation.participant.verified && (
+                      <Badge variant="outline" className="text-xs">
+                        Creator
+                      </Badge>
+                      {selectedConversation.brand.verified && (
+                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                          Verified
+                        </Badge>
+                      )}
+                      {selectedConversation.creator.verified && (
                         <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
                           Verified
                         </Badge>
@@ -492,13 +501,13 @@ export function Inbox() {
                     >
                       <div className={`max-w-[70%] ${isOwnMessage ? "order-2" : "order-1"}`}>
                         <div
-                          className={`p-3 rounded-lg ${
+                          className={`p-3 rounded-lg max-w-[70%] ${
                             isOwnMessage
                               ? "bg-blue-500 text-white"
                               : "bg-white border"
                           }`}
                         >
-                          <p className="text-sm">{message.content}</p>
+                          <p className="text-sm leading-relaxed break-words">{message.content}</p>
                           {message.dealDetails && (
                             <div className={`mt-3 p-3 rounded-lg ${
                               isOwnMessage ? "bg-blue-600" : "bg-gray-50"
@@ -517,7 +526,7 @@ export function Inbox() {
                               </div>
                               <div className="space-y-1">
                                 {message.dealDetails.deliverables.map((deliverable, index) => (
-                                  <div key={index} className={`text-xs ${
+                                  <div key={index} className={`text-xs leading-relaxed ${
                                     isOwnMessage ? "text-blue-100" : "text-gray-600"
                                   }`}>
                                     • {deliverable}
@@ -538,7 +547,7 @@ export function Inbox() {
                               {formatTimestamp(message.timestamp)}
                             </span>
                             {isOwnMessage && (
-                              <CheckCircle className="w-3 h-3" />
+                              <CheckCircle className="w-3 h-3 flex-shrink-0" />
                             )}
                           </div>
                         </div>

@@ -110,15 +110,15 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
   // Mock profile data
   const profile: Profile = {
     id: "1",
-    name: userRole === "creator" ? "Alex Chen" : "SportFit Pro",
-    username: userRole === "creator" ? "@alexfitness" : "@sportfitpro",
+    name: userRole === "creator" ? "Glenn Chen" : "SportFit Pro",
+    username: userRole === "creator" ? "@glennfitness" : "@sportfitpro",
     avatar: userRole === "creator" ? "/placeholder-user.jpg" : "/placeholder-logo.png",
     bio: userRole === "creator" 
       ? "Fitness & lifestyle content creator helping people achieve their health goals through sustainable workouts and nutrition tips. Certified personal trainer and nutrition coach."
       : "Leading fitness brand dedicated to helping people achieve their health and wellness goals. Premium quality supplements and workout equipment.",
     location: "Los Angeles, CA",
-    website: userRole === "creator" ? "https://alexfitness.com" : "https://sportfitpro.com",
-    email: userRole === "creator" ? "alex@alexfitness.com" : "contact@sportfitpro.com",
+    website: userRole === "creator" ? "https://glennfitness.com" : "https://sportfitpro.com",
+    email: userRole === "creator" ? "glenn@glennfitness.com" : "contact@sportfitpro.com",
     phone: userRole === "creator" ? "+1 (555) 123-4567" : "+1 (555) 987-6543",
     type: userRole === "creator" ? "influencer" : "brand",
     verified: true,
@@ -136,19 +136,19 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
     platforms: [
       {
         name: "Instagram",
-        username: userRole === "creator" ? "@alexfitness" : "@sportfitpro",
+        username: userRole === "creator" ? "@glennfitness" : "@sportfitpro",
         followers: userRole === "creator" ? 125000 : 85000,
         verified: true,
       },
       {
         name: "Facebook",
-        username: userRole === "creator" ? "Alex Fitness" : "SportFit Pro",
+        username: userRole === "creator" ? "Glenn Fitness" : "SportFit Pro",
         followers: userRole === "creator" ? 45000 : 32000,
         verified: true,
       },
       {
         name: "Twitter",
-        username: userRole === "creator" ? "@alexfitness" : "@sportfitpro",
+        username: userRole === "creator" ? "@glennfitness" : "@sportfitpro",
         followers: userRole === "creator" ? 28000 : 18000,
         verified: false,
       },

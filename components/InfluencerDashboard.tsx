@@ -44,22 +44,22 @@ import {
   Search,
   User,
 } from "lucide-react"
-import { useDashboardData } from "./hooks/useDashboardData"
-import { LoadingScreen } from "./components/LoadingScreen"
-import { AnimatedCounter } from "./components/AnimatedCounter"
-import { InteractiveChart } from "./components/InteractiveChart"
-import type { Post } from "./types/dashboard"
-import { LoginPage } from "./components/LoginPage"
-import { CreatorRecommendations } from "./components/creator/CreatorRecommendations"
-import { BrandHome } from "./components/brand/BrandHome"
-import { BrandInsights } from "./components/brand/BrandInsights"
-import { BrandSettings } from "./components/brand/BrandSettings"
-import { AccountConnection } from "./components/onboarding/AccountConnection"
-import { CampaignCreator } from "./components/brand/CampaignCreator"
-import { InfluencerDiscovery } from "@/components/brand/InfluencerDiscovery"
-import { AdvancedAnalytics } from "@/components/creator/AdvancedAnalytics"
-import { ProfileSystem } from "@/components/ProfileSystem"
-import { Inbox } from "@/components/Inbox"
+import { useDashboardData } from "../hooks/useDashboardData"
+import { LoadingScreen } from "./LoadingScreen"
+import { AnimatedCounter } from "./AnimatedCounter"
+import { InteractiveChart } from "./InteractiveChart"
+import type { Post } from "../types/dashboard"
+import { LoginPage } from "./LoginPage"
+import { CreatorRecommendations } from "./creator/CreatorRecommendations"
+import { BrandHome } from "./brand/BrandHome"
+import { BrandInsights } from "./brand/BrandInsights"
+import { BrandSettings } from "./brand/BrandSettings"
+import { AccountConnection } from "./onboarding/AccountConnection"
+import { CampaignCreator } from "./brand/CampaignCreator"
+import { InfluencerDiscovery } from "./brand/InfluencerDiscovery"
+import { AdvancedAnalytics } from "./creator/AdvancedAnalytics"
+import { ProfileSystem } from "./ProfileSystem"
+import { Inbox } from "./Inbox"
 
 export default function InfluencerDashboard() {
   const [activeTab, setActiveTab] = useState("home")
@@ -223,7 +223,7 @@ export default function InfluencerDashboard() {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{userRole === "creator" ? "Hey Alex! 👋" : "Hey SportFit! 👋"}</h1>
+                <h1 className="text-2xl font-bold">{userRole === "creator" ? "Hey Glenn! 👋" : "Hey SportFit! 👋"}</h1>
                 <p className="text-purple-100">
                   {userRole === "creator" ? "Artemis is helping you grow!" : "Artemis is optimizing your campaigns!"}
                 </p>

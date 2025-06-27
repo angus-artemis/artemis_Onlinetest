@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Plus,
   Search,
@@ -37,6 +38,9 @@ import {
   Check,
   X,
   AlertCircle,
+  Heart,
+  MessageCircle,
+  UserPlus,
 } from "lucide-react"
 
 interface Campaign {
@@ -87,12 +91,52 @@ interface AcceptedDeal {
   progress: number
 }
 
+interface Influencer {
+  id: string
+  name: string
+  username: string
+  avatar: string
+  verified: boolean
+  followers: number
+  engagement: number
+  niche: string[]
+  location: string
+  bio: string
+  averageLikes: number
+  averageComments: number
+  pricePerPost: number
+  availability: "available" | "busy" | "unavailable"
+  rating: number
+  totalCampaigns: number
+  responseRate: number
+  responseTime: string
+  platforms: {
+    instagram: boolean
+    tiktok: boolean
+    youtube: boolean
+  }
+}
+
 export function CampaignCreator() {
   const [activeTab, setActiveTab] = useState("create")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedNiche, setSelectedNiche] = useState("all")
   const [userRole] = useState<"brand" | "creator">("brand")
+
+  // Influencer discovery filters
+  const [influencerFilters, setInfluencerFilters] = useState({
+    minFollowers: 0,
+    maxFollowers: 1000000,
+    minEngagement: 0,
+    maxEngagement: 10,
+    selectedNiche: "all",
+    maxPrice: 10000,
+    location: "",
+    availability: "all" as "all" | "available" | "busy" | "unavailable",
+  })
+
+  const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([])
 
   // Mock campaigns data
   const campaigns: Campaign[] = [
@@ -233,24 +277,186 @@ export function CampaignCreator() {
     },
   ]
 
-  const [newCampaign, setNewCampaign] = useState({
-    title: "",
-    description: "",
-    minFollowers: 25000,
-    minEngagement: 3.5,
-    niches: [] as string[],
-    location: "",
-    minBudget: 1000,
-    maxBudget: 5000,
-    deliverables: [] as string[],
-    timeline: "2 weeks",
-  })
+  // Mock influencers data
+  const influencers: Influencer[] = [
+    {
+      id: "inf-1",
+      name: "Glenn Chen",
+      username: "@glennchen_fitness",
+      avatar: "/placeholder-user.jpg",
+      verified: true,
+      followers: 125000,
+      engagement: 4.2,
+      niche: ["Fitness", "Wellness", "Lifestyle"],
+      location: "Los Angeles, CA",
+      bio: "Fitness enthusiast helping people achieve their health goals through sustainable workouts and nutrition tips.",
+      averageLikes: 5200,
+      averageComments: 320,
+      pricePerPost: 2500,
+      availability: "available",
+      rating: 4.8,
+      totalCampaigns: 45,
+      responseRate: 95,
+      responseTime: "2 hours",
+      platforms: { instagram: true, tiktok: true, youtube: false },
+    },
+    {
+      id: "inf-2",
+      name: "Sarah Kim",
+      username: "@sarahkim_nutrition",
+      avatar: "/placeholder-user.jpg",
+      verified: true,
+      followers: 89000,
+      engagement: 4.8,
+      niche: ["Nutrition", "Health", "Lifestyle"],
+      location: "New York, NY",
+      bio: "Registered dietitian sharing evidence-based nutrition advice and healthy recipes.",
+      averageLikes: 4300,
+      averageComments: 280,
+      pricePerPost: 1800,
+      availability: "available",
+      rating: 4.9,
+      totalCampaigns: 32,
+      responseRate: 98,
+      responseTime: "1 hour",
+      platforms: { instagram: true, tiktok: false, youtube: true },
+    },
+    {
+      id: "inf-3",
+      name: "Mike Rodriguez",
+      username: "@mikerod_fitness",
+      avatar: "/placeholder-user.jpg",
+      verified: false,
+      followers: 250000,
+      engagement: 3.9,
+      niche: ["Fitness", "Sports", "Motivation"],
+      location: "Miami, FL",
+      bio: "Personal trainer and former athlete helping people transform their lives through fitness.",
+      averageLikes: 9800,
+      averageComments: 450,
+      pricePerPost: 4000,
+      availability: "busy",
+      rating: 4.6,
+      totalCampaigns: 67,
+      responseRate: 88,
+      responseTime: "4 hours",
+      platforms: { instagram: true, tiktok: true, youtube: true },
+    },
+    {
+      id: "inf-4",
+      name: "Emma Wilson",
+      username: "@emmawilson_lifestyle",
+      avatar: "/placeholder-user.jpg",
+      verified: true,
+      followers: 75000,
+      engagement: 5.1,
+      niche: ["Lifestyle", "Travel", "Fashion"],
+      location: "Austin, TX",
+      bio: "Lifestyle blogger sharing travel adventures, fashion tips, and daily inspiration.",
+      averageLikes: 3800,
+      averageComments: 190,
+      pricePerPost: 1500,
+      availability: "available",
+      rating: 4.7,
+      totalCampaigns: 28,
+      responseRate: 92,
+      responseTime: "3 hours",
+      platforms: { instagram: true, tiktok: false, youtube: false },
+    },
+    {
+      id: "inf-5",
+      name: "David Park",
+      username: "@davidpark_tech",
+      avatar: "/placeholder-user.jpg",
+      verified: true,
+      followers: 180000,
+      engagement: 4.5,
+      niche: ["Technology", "Gadgets", "Lifestyle"],
+      location: "San Francisco, CA",
+      bio: "Tech enthusiast and content creator sharing the latest gadgets and tech tips.",
+      averageLikes: 8100,
+      averageComments: 520,
+      pricePerPost: 3200,
+      availability: "available",
+      rating: 4.8,
+      totalCampaigns: 53,
+      responseRate: 96,
+      responseTime: "2 hours",
+      platforms: { instagram: true, tiktok: true, youtube: true },
+    },
+    {
+      id: "inf-6",
+      name: "Lisa Thompson",
+      username: "@lisathompson_beauty",
+      avatar: "/placeholder-user.jpg",
+      verified: false,
+      followers: 95000,
+      engagement: 4.7,
+      niche: ["Beauty", "Skincare", "Lifestyle"],
+      location: "Chicago, IL",
+      bio: "Beauty blogger and skincare enthusiast sharing tips and product reviews.",
+      averageLikes: 4500,
+      averageComments: 310,
+      pricePerPost: 2000,
+      availability: "available",
+      rating: 4.5,
+      totalCampaigns: 41,
+      responseRate: 90,
+      responseTime: "5 hours",
+      platforms: { instagram: true, tiktok: true, youtube: false },
+    },
+  ]
 
   const filteredCampaigns = campaigns.filter(campaign =>
     campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     campaign.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     campaign.brand.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Filter influencers based on criteria
+  const filteredInfluencers = influencers.filter(influencer => {
+    const matchesFollowers = influencer.followers >= influencerFilters.minFollowers && 
+                            influencer.followers <= influencerFilters.maxFollowers
+    const matchesEngagement = influencer.engagement >= influencerFilters.minEngagement && 
+                             influencer.engagement <= influencerFilters.maxEngagement
+    const matchesNiche = influencerFilters.selectedNiche === "all" || 
+                        influencer.niche.includes(influencerFilters.selectedNiche)
+    const matchesPrice = influencer.pricePerPost <= influencerFilters.maxPrice
+    const matchesLocation = !influencerFilters.location || 
+                           influencer.location.toLowerCase().includes(influencerFilters.location.toLowerCase())
+    const matchesAvailability = influencerFilters.availability === "all" || 
+                               influencer.availability === influencerFilters.availability
+
+    return matchesFollowers && matchesEngagement && matchesNiche && 
+           matchesPrice && matchesLocation && matchesAvailability
+  })
+
+  const handleInfluencerSelection = (influencerId: string) => {
+    setSelectedInfluencers(prev => 
+      prev.includes(influencerId) 
+        ? prev.filter(id => id !== influencerId)
+        : [...prev, influencerId]
+    )
+  }
+
+  const handleInviteInfluencers = () => {
+    console.log("Inviting influencers:", selectedInfluencers)
+    // Add invitation logic here
+    setSelectedInfluencers([])
+  }
+
+  const getAvailabilityColor = (availability: string) => {
+    switch (availability) {
+      case "available":
+        return "bg-green-100 text-green-700"
+      case "busy":
+        return "bg-yellow-100 text-yellow-700"
+      case "unavailable":
+        return "bg-red-100 text-red-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
+  }
 
   const handleCreateCampaign = () => {
     // Add campaign creation logic here
@@ -297,6 +503,19 @@ export function CampaignCreator() {
     return "bg-blue-500"
   }
 
+  const [newCampaign, setNewCampaign] = useState({
+    title: "",
+    description: "",
+    minFollowers: 25000,
+    minEngagement: 3.5,
+    niches: [] as string[],
+    location: "",
+    minBudget: 1000,
+    maxBudget: 5000,
+    deliverables: [] as string[],
+    timeline: "2 weeks",
+  })
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -321,9 +540,12 @@ export function CampaignCreator() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="create">
             {userRole === "brand" ? "My Campaigns" : "Available Campaigns"}
+          </TabsTrigger>
+          <TabsTrigger value="discovery">
+            {userRole === "brand" ? "Influencer Discovery" : "My Applications"}
           </TabsTrigger>
           <TabsTrigger value="active">
             {userRole === "brand" ? "Active Deals" : "My Applications"}
@@ -366,20 +588,20 @@ export function CampaignCreator() {
           {/* Campaigns Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCampaigns.map((campaign) => (
-              <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-10 h-10">
+              <Card key={campaign.id} className="hover:shadow-lg transition-shadow h-auto">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <Avatar className="w-10 h-10 flex-shrink-0">
                         <AvatarImage src={campaign.brand.avatar} />
                         <AvatarFallback>
                           {campaign.brand.name.split(" ").map(n => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <h3 className="font-semibold">{campaign.brand.name}</h3>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-sm truncate">{campaign.brand.name}</h3>
                         {campaign.brand.verified && (
-                          <CheckCircle className="w-4 h-4 text-blue-500" />
+                          <CheckCircle className="w-4 h-4 text-blue-500 mt-1" />
                         )}
                       </div>
                     </div>
@@ -387,26 +609,26 @@ export function CampaignCreator() {
                       {campaign.status}
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg mt-3">{campaign.title}</CardTitle>
-                  <p className="text-sm text-gray-600">{campaign.description}</p>
+                  <CardTitle className="text-lg mt-3 line-clamp-2 leading-tight">{campaign.title}</CardTitle>
+                  <p className="text-sm text-gray-600 mt-2 line-clamp-3 leading-relaxed">{campaign.description}</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-0">
                   {/* Requirements */}
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm">Requirements</h4>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-gray-400" />
-                        <span>{formatNumber(campaign.requirements.followers)}+</span>
+                        <Users className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{formatNumber(campaign.requirements.followers)}+</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3 text-gray-400" />
-                        <span>{campaign.requirements.engagement}%+</span>
+                        <TrendingUp className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{campaign.requirements.engagement}%+</span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mt-2">
                       {campaign.requirements.niche.map(niche => (
-                        <Badge key={niche} variant="outline" className="text-xs">
+                        <Badge key={niche} variant="outline" className="text-xs px-2 py-1">
                           {niche}
                         </Badge>
                       ))}
@@ -416,14 +638,14 @@ export function CampaignCreator() {
                   {/* Budget */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
-                      <DollarSign className="w-4 h-4 text-green-500" />
-                      <span className="font-medium">
+                      <DollarSign className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-sm">
                         ${campaign.budget.min.toLocaleString()} - ${campaign.budget.max.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <Clock className="w-3 h-3" />
-                      <span>{campaign.timeline}</span>
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{campaign.timeline}</span>
                     </div>
                   </div>
 
@@ -431,13 +653,13 @@ export function CampaignCreator() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">{campaign.applications} applications</span>
                     <div className="flex items-center gap-1 text-gray-600">
-                      <Calendar className="w-3 h-3" />
-                      <span>Due {campaign.deadline.toLocaleDateString()}</span>
+                      <Calendar className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">Due {campaign.deadline.toLocaleDateString()}</span>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-2">
                     {userRole === "brand" ? (
                       <>
                         <Button variant="outline" size="sm" className="flex-1">
@@ -459,6 +681,315 @@ export function CampaignCreator() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        {/* Influencer Discovery Tab */}
+        <TabsContent value="discovery" className="space-y-6">
+          {userRole === "brand" ? (
+            <>
+              {/* Filters Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5" />
+                    Find Perfect Influencers
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="minFollowers">Min Followers</Label>
+                      <Input
+                        id="minFollowers"
+                        type="number"
+                        value={influencerFilters.minFollowers}
+                        onChange={(e) => setInfluencerFilters({
+                          ...influencerFilters,
+                          minFollowers: Number(e.target.value)
+                        })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="maxFollowers">Max Followers</Label>
+                      <Input
+                        id="maxFollowers"
+                        type="number"
+                        value={influencerFilters.maxFollowers}
+                        onChange={(e) => setInfluencerFilters({
+                          ...influencerFilters,
+                          maxFollowers: Number(e.target.value)
+                        })}
+                        placeholder="1,000,000"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="minEngagement">Min Engagement (%)</Label>
+                      <Input
+                        id="minEngagement"
+                        type="number"
+                        step="0.1"
+                        value={influencerFilters.minEngagement}
+                        onChange={(e) => setInfluencerFilters({
+                          ...influencerFilters,
+                          minEngagement: Number(e.target.value)
+                        })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="maxEngagement">Max Engagement (%)</Label>
+                      <Input
+                        id="maxEngagement"
+                        type="number"
+                        step="0.1"
+                        value={influencerFilters.maxEngagement}
+                        onChange={(e) => setInfluencerFilters({
+                          ...influencerFilters,
+                          maxEngagement: Number(e.target.value)
+                        })}
+                        placeholder="10"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="niche">Niche</Label>
+                      <Select 
+                        value={influencerFilters.selectedNiche} 
+                        onValueChange={(value) => setInfluencerFilters({
+                          ...influencerFilters,
+                          selectedNiche: value
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Niches</SelectItem>
+                          <SelectItem value="Fitness">Fitness</SelectItem>
+                          <SelectItem value="Nutrition">Nutrition</SelectItem>
+                          <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+                          <SelectItem value="Technology">Technology</SelectItem>
+                          <SelectItem value="Beauty">Beauty</SelectItem>
+                          <SelectItem value="Travel">Travel</SelectItem>
+                          <SelectItem value="Fashion">Fashion</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="maxPrice">Max Price per Post ($)</Label>
+                      <Input
+                        id="maxPrice"
+                        type="number"
+                        value={influencerFilters.maxPrice}
+                        onChange={(e) => setInfluencerFilters({
+                          ...influencerFilters,
+                          maxPrice: Number(e.target.value)
+                        })}
+                        placeholder="10,000"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="location">Location</Label>
+                      <Input
+                        id="location"
+                        value={influencerFilters.location}
+                        onChange={(e) => setInfluencerFilters({
+                          ...influencerFilters,
+                          location: e.target.value
+                        })}
+                        placeholder="City, State"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="availability">Availability</Label>
+                      <Select 
+                        value={influencerFilters.availability} 
+                        onValueChange={(value) => setInfluencerFilters({
+                          ...influencerFilters,
+                          availability: value as "all" | "available" | "busy" | "unavailable"
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="available">Available</SelectItem>
+                          <SelectItem value="busy">Busy</SelectItem>
+                          <SelectItem value="unavailable">Unavailable</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Selected Influencers Summary */}
+              {selectedInfluencers.length > 0 && (
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-5 h-5 text-blue-600" />
+                        <span className="font-medium text-blue-900">
+                          {selectedInfluencers.length} influencer{selectedInfluencers.length !== 1 ? 's' : ''} selected
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSelectedInfluencers([])}
+                        >
+                          Clear All
+                        </Button>
+                        <Button 
+                          size="sm"
+                          onClick={handleInviteInfluencers}
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          Invite Selected ({selectedInfluencers.length})
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Influencers Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredInfluencers.map((influencer) => (
+                  <Card 
+                    key={influencer.id} 
+                    className={`hover:shadow-lg transition-shadow cursor-pointer h-auto ${
+                      selectedInfluencers.includes(influencer.id) 
+                        ? 'ring-2 ring-blue-500 bg-blue-50' 
+                        : ''
+                    }`}
+                    onClick={() => handleInfluencerSelection(influencer.id)}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Avatar className="w-12 h-12 flex-shrink-0">
+                            <AvatarImage src={influencer.avatar} />
+                            <AvatarFallback>
+                              {influencer.name.split(" ").map(n => n[0]).join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-sm truncate">{influencer.name}</h3>
+                              {influencer.verified && (
+                                <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 truncate">{influencer.username}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="text-sm font-medium">{influencer.rating}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{influencer.bio}</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-0">
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="flex items-center gap-1 text-gray-600 mb-1">
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="text-xs">Followers</span>
+                          </div>
+                          <span className="font-medium text-sm">{formatNumber(influencer.followers)}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1 text-gray-600 mb-1">
+                            <TrendingUp className="w-3 h-3 flex-shrink-0" />
+                            <span className="text-xs">Engagement</span>
+                          </div>
+                          <span className="font-medium text-sm">{influencer.engagement}%</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1 text-gray-600 mb-1">
+                            <DollarSign className="w-3 h-3 flex-shrink-0" />
+                            <span className="text-xs">Price/Post</span>
+                          </div>
+                          <span className="font-medium text-sm">${influencer.pricePerPost.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1 text-gray-600 mb-1">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="text-xs">Location</span>
+                          </div>
+                          <span className="font-medium text-sm truncate">{influencer.location}</span>
+                        </div>
+                      </div>
+
+                      {/* Niche Tags */}
+                      <div className="flex flex-wrap gap-1">
+                        {influencer.niche.map(niche => (
+                          <Badge key={niche} variant="outline" className="text-xs px-2 py-1">
+                            {niche}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* Availability & Response */}
+                      <div className="flex items-center justify-between">
+                        <Badge className={getAvailabilityColor(influencer.availability)}>
+                          {influencer.availability}
+                        </Badge>
+                        <div className="text-xs text-gray-600">
+                          {influencer.responseRate}% response rate
+                        </div>
+                      </div>
+
+                      {/* Platforms */}
+                      <div className="flex items-center gap-2">
+                        {influencer.platforms.instagram && (
+                          <Instagram className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                        )}
+                        {influencer.platforms.tiktok && (
+                          <div className="w-4 h-4 bg-black rounded-sm flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs font-bold">T</span>
+                          </div>
+                        )}
+                        {influencer.platforms.youtube && (
+                          <div className="w-4 h-4 bg-red-500 rounded-sm flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs font-bold">Y</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Selection Indicator */}
+                      {selectedInfluencers.includes(influencer.id) && (
+                        <div className="flex items-center gap-2 text-blue-600 pt-2">
+                          <Check className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-sm font-medium">Selected</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {filteredInfluencers.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No influencers found</h3>
+                  <p className="text-gray-500">Try adjusting your filters to find more influencers</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">Your Applications</h3>
+              <p className="text-gray-500">Track your campaign applications here</p>
+            </div>
+          )}
         </TabsContent>
 
         {/* Active Deals Tab */}

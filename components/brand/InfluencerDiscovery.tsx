@@ -97,8 +97,8 @@ export function InfluencerDiscovery() {
   const mockInfluencers: Influencer[] = [
     {
       id: "1",
-      name: "Alex Chen",
-      username: "@alexfitness",
+      name: "Glenn Chen",
+      username: "@glennfitness",
       avatar: "/placeholder-user.jpg",
       followers: 125000,
       engagement: 4.2,
