@@ -48,7 +48,7 @@ export default function LandingPage() {
           Grow Your Influence. Close Brand Deals. All From Your Phone.
         </h1>
         <p className="text-lg md:text-2xl text-gray-700 mb-8 max-w-2xl mx-auto">
-          Artemis gives creators AI-powered post ideas and scheduling, while brands discover and book talent fast — no emails, no guesswork.
+          Schedule posts, recieve AI recommendations, get paid and grow your audience. Brands? Easily discover and book local creators without the hassle.
         </p>
         <a
           href="https://docs.google.com/forms/d/e/1FAIpQLSfyK7IOedrq5qnh9HQb1oY4Y1d8bTynLP5kbS0ZP24OdjWDuA/viewform?usp=sharing&ouid=107373677233444056264"
