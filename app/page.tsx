@@ -45,10 +45,10 @@ export default function LandingPage() {
           <Image src="/images/artemis-logo.png" alt="Artemis Logo" width={72} height={72} className="rounded-full shadow-lg" />
         </div>
         <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent mb-4">
-          Grow Your Influence. Close Brand Deals. All From Your Phone.
+          Grow Your Influence. Close Brand Deals.
         </h1>
         <p className="text-lg md:text-2xl text-gray-700 mb-8 max-w-2xl mx-auto">
-          Schedule posts, receive AI recommendations, get paid and grow your audience. Brands? Easily discover and book local creators without the hassle.
+          Connect your Instagram, schedule posts, receive AI recommendations, get paid and grow your audience. Brands? Easily discover and book local creators without the hassle.
         </p>
         <a
           href="https://docs.google.com/forms/d/e/1FAIpQLSfyK7IOedrq5qnh9HQb1oY4Y1d8bTynLP5kbS0ZP24OdjWDuA/viewform?usp=sharing&ouid=107373677233444056264"
