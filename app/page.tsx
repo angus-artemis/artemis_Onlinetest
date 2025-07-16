@@ -85,25 +85,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Instagram Connected Section */}
-      <section className="py-12 px-4 bg-gradient-to-br from-purple-100 to-blue-100">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-8">Artemis is Instagram Connected</h2>
-          <div className="flex justify-center items-center gap-6 mb-8">
-            <Image src="/images/artemis-logo.png" alt="Artemis Logo" width={64} height={64} className="rounded-full shadow-lg" />
-            <div className="text-4xl">🔗</div>
-            <Image src="/images/instagram-logo.svg" alt="Instagram Logo" width={64} height={64} className="shadow-lg" />
-          </div>
-          <div className="max-w-3xl mx-auto space-y-6 text-lg text-gray-700">
-            <p>
-              Artemis is a free app that connects directly to your Instagram, giving you tailored insights, content tips, and scheduling tools to grow your audience while getting paid.
-            </p>
-            <p>
-              Brands connect their accounts too. Making it easy to find the right creators and promote high-impact campaigns in minutes.
-            </p>
-          </div>
-        </div>
-      </section>
+
 
       {/* Feature Highlights Grid */}
       <section className="py-12 px-4 bg-white/90">
@@ -148,6 +130,11 @@ export default function LandingPage() {
             <div className="text-3xl mb-2">📲</div>
             <h3 className="font-semibold mb-1">Real-Time Notifications</h3>
             <p className="text-gray-600 text-sm">Never miss an opportunity</p>
+          </div>
+          <div>
+            <div className="text-3xl mb-2">📷</div>
+            <h3 className="font-semibold mb-1">Linked to Instagram</h3>
+            <p className="text-gray-600 text-sm">Artemis connects for complete ease</p>
           </div>
           <div>
             <div className="text-3xl mb-2">🚀</div>
