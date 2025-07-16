@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +24,9 @@ import {
 
 export function TeamCollaboration() {
   const [selectedRole, setSelectedRole] = useState("editor")
+  const [comments, setComments] = useState<{ [activityId: string]: string[] }>({})
+  const [editingActivity, setEditingActivity] = useState<string | null>(null)
+  const commentInputRefs = useRef<{ [activityId: string]: HTMLInputElement | null }>({})
 
   const teamMembers = [
     {
@@ -366,6 +369,38 @@ export function TeamCollaboration() {
                   <span className="font-medium">{activity.target}</span>
                 </p>
                 <p className="text-xs text-gray-500">{activity.time}</p>
+                <div className="mt-2">
+                  <div className="text-xs font-semibold mb-1">Comments:</div>
+                  <ul className="mb-1">
+                    {(comments[activity.id] || []).map((comment, idx) => (
+                      <li key={idx} className="text-xs text-gray-700">- {comment}</li>
+                    ))}
+                  </ul>
+                  <input
+                    ref={el => { commentInputRefs.current[activity.id] = el }}
+                    type="text"
+                    placeholder="Add a comment..."
+                    className="border rounded px-2 py-1 text-xs"
+                    onKeyDown={e => {
+                      if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                        setComments(prev => ({
+                          ...prev,
+                          [activity.id]: [...(prev[activity.id] || []), e.currentTarget.value.trim()]
+                        }))
+                        e.currentTarget.value = ""
+                      }
+                    }}
+                  />
+                </div>
+                {editingActivity === activity.id && (
+                  <div className="text-xs text-blue-500 mt-1">User is editing...</div>
+                )}
+                <Button size="sm" variant="ghost" onClick={() => setEditingActivity(activity.id)}>
+                  Start Editing
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setEditingActivity(null)}>
+                  Stop Editing
+                </Button>
               </div>
               <Badge variant="secondary" className="bg-blue-50 text-blue-700">
                 {activity.type}

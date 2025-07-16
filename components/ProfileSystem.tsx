@@ -116,7 +116,7 @@ export function ProfileSystem({ userRole }: { userRole: "creator" | "brand" }) {
     bio: userRole === "creator" 
       ? "Fitness & lifestyle content creator helping people achieve their health goals through sustainable workouts and nutrition tips. Certified personal trainer and nutrition coach."
       : "Leading fitness brand dedicated to helping people achieve their health and wellness goals. Premium quality supplements and workout equipment.",
-    location: "Los Angeles, CA",
+    location: userRole === "creator" ? "Brisbane, Australia" : "Los Angeles, CA",
     website: userRole === "creator" ? "https://glennfitness.com" : "https://sportfitpro.com",
     email: userRole === "creator" ? "glenn@glennfitness.com" : "contact@sportfitpro.com",
     phone: userRole === "creator" ? "+1 (555) 123-4567" : "+1 (555) 987-6543",

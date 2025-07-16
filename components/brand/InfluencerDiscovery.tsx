@@ -106,7 +106,7 @@ export function InfluencerDiscovery() {
       price: 2500,
       bio: "Fitness & lifestyle content creator helping people achieve their health goals through sustainable workouts and nutrition tips.",
       tags: ["fitness", "lifestyle", "wellness", "nutrition", "workout"],
-      location: "Los Angeles, CA",
+      location: "Brisbane, Australia",
       responseTime: "2-4 hours",
       rating: 4.8,
       completedCampaigns: 47,

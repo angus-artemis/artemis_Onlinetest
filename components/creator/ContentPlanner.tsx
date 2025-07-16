@@ -10,6 +10,16 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CalendarIcon, Clock, TrendingUp, Zap, Target, Plus, Play, ImageIcon, Eye, Sparkles } from "lucide-react"
+import axios from "axios"
+
+type PostData = {
+  type: string
+  title: string
+  description: string
+  date: string
+  time: string
+  hashtags: string
+}
 
 export function ContentPlanner() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
@@ -113,6 +123,16 @@ export function ContentPlanner() {
     }
   }
 
+  const handleSchedulePost = async (postData: PostData) => {
+    // Save post logic here (existing or mock)
+    // ...
+    // Schedule push notification
+    await axios.post("/api/notifications/schedule", {
+      userId: "demo-user-id", // Replace with real user id from session/context
+      post: postData
+    })
+  }
+
   return (
     <div className="p-4 space-y-6">
       {/* Content Calendar */}
@@ -174,7 +194,16 @@ export function ContentPlanner() {
                     <label className="text-sm font-medium">Hashtags</label>
                     <Input placeholder="#fitness #motivation #health" />
                   </div>
-                  <Button className="w-full">Schedule Post</Button>
+                  <Button className="w-full" onClick={() => handleSchedulePost({
+                    type: "reel", // Replace with actual form value
+                    title: "Post title", // Replace with actual form value
+                    description: "Describe your content", // Replace with actual form value
+                    date: "2024-01-01", // Replace with actual form value
+                    time: "12:00", // Replace with actual form value
+                    hashtags: "#fitness #motivation #health" // Replace with actual form value
+                  })}>
+                    Schedule Post
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>

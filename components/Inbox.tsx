@@ -100,6 +100,7 @@ export function Inbox() {
     deliverables: ["3 Instagram posts", "2 Instagram stories", "1 TikTok video"],
     timeline: "2 weeks",
   })
+  const [dealTimeline, setDealTimeline] = useState<{ [conversationId: string]: { status: string, timestamp: Date }[] }>({})
 
   // Mock data
   const mockConversations: Conversation[] = [
@@ -307,6 +308,14 @@ export function Inbox() {
       // Add to campaigns for both parties
       console.log("Deal accepted - adding to campaigns")
     }
+
+    setDealTimeline(prev => ({
+      ...prev,
+      [selectedConversation.id]: [
+        ...(prev[selectedConversation.id] || []),
+        { status: action, timestamp: new Date() }
+      ]
+    }))
 
     setShowDealDialog(false)
   }
@@ -557,6 +566,20 @@ export function Inbox() {
                 })}
               </div>
             </ScrollArea>
+
+            {/* Deal Timeline */}
+            {selectedConversation && dealTimeline[selectedConversation.id] && (
+              <div className="p-4 bg-gray-50 border-t">
+                <div className="text-xs font-semibold mb-1">Deal Timeline:</div>
+                <ul>
+                  {dealTimeline[selectedConversation.id].map((entry, idx) => (
+                    <li key={idx} className="text-xs text-gray-700">
+                      {entry.status} at {entry.timestamp.toLocaleString()}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Deal Action Buttons */}
             {selectedConversation.dealStatus === "pending" && (

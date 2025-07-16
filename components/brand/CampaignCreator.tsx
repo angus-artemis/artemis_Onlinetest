@@ -288,7 +288,7 @@ export function CampaignCreator() {
       followers: 125000,
       engagement: 4.2,
       niche: ["Fitness", "Wellness", "Lifestyle"],
-      location: "Los Angeles, CA",
+      location: "Brisbane, Australia",
       bio: "Fitness enthusiast helping people achieve their health goals through sustainable workouts and nutrition tips.",
       averageLikes: 5200,
       averageComments: 320,
